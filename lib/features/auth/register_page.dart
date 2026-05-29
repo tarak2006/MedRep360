@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../services/auth_service.dart';
+import '../../services/session_state.dart';
+import '../../services/api_service.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -17,6 +19,12 @@ class _RegisterPageState extends State<RegisterPage> {
   final confirmPasswordController = TextEditingController();
 
   bool _isLoading = false;
+  String _selectedRole = 'Medical Representative';
+  final List<String> _roles = [
+    'Medical Representative',
+    'Operations Manager',
+    'Technician',
+  ];
 
   void navigateToLogin() {
     Navigator.pop(context); // Go back to login
@@ -39,8 +47,12 @@ class _RegisterPageState extends State<RegisterPage> {
 
     final AuthService _authService = AuthService();
     try {
-      final response = await _authService.signUpWithEmail(email, password);
+      final response = await _authService.signUpWithEmail(email, password, name, _selectedRole);
       if (response.user != null) {
+        SessionState.clear();
+        if (_selectedRole == 'Technician') {
+          await ApiService().createTechnician(name, email);
+        }
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Registration successful!')),
         );
@@ -193,6 +205,38 @@ class _RegisterPageState extends State<RegisterPage> {
                                     filled: true,
                                     fillColor: Colors.grey[50],
                                   ),
+                                ),
+                                const SizedBox(height: 20),
+
+                                // Role Dropdown Field
+                                DropdownButtonFormField<String>(
+                                  value: _selectedRole,
+                                  decoration: InputDecoration(
+                                    labelText: 'Your Role',
+                                    prefixIcon: const Icon(Icons.badge_outlined),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: BorderSide(
+                                        color: Colors.grey.shade300,
+                                      ),
+                                    ),
+                                    filled: true,
+                                    fillColor: Colors.grey[50],
+                                  ),
+                                  items: _roles.map((role) {
+                                    return DropdownMenuItem<String>(
+                                      value: role,
+                                      child: Text(role),
+                                    );
+                                  }).toList(),
+                                  onChanged: (val) {
+                                    if (val != null) {
+                                      setState(() => _selectedRole = val);
+                                    }
+                                  },
                                 ),
                                 const SizedBox(height: 20),
 

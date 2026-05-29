@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'features/auth/login_page.dart';
 import 'features/dashboard/dashboard_page.dart';
+import 'features/interactions/interactions_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,7 +25,8 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       home: const LoginPage(),
       routes: {
-        '/dashboard': (context) => DashboardPage(),
+        '/dashboard': (context) => const DashboardPage(),
+        '/interactions': (context) => const InteractionsPage(),
       },
     );
   }

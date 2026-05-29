@@ -24,7 +24,7 @@ class DashboardCard extends StatelessWidget {
         side: BorderSide(color: Colors.blueAccent.withOpacity(0.1)),
       ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [

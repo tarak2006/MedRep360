@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../widgets/sidebar.dart';
+import '../../services/api_service.dart';
+import '../../models/doctor.dart';
+import '../../models/interaction.dart';
 
 class DoctorsPage extends StatefulWidget {
   const DoctorsPage({super.key});
@@ -10,53 +13,38 @@ class DoctorsPage extends StatefulWidget {
 }
 
 class _DoctorsPageState extends State<DoctorsPage> {
-  // Using dummy list as requested
-  final List<Map<String, dynamic>> doctorData = [
-    {
-      'name': 'Dr. Arun',
-      'specialty': 'Cardiology',
-      'region': 'Hyderabad',
-      'interactions': 25,
-    },
-    {
-      'name': 'Dr. Sneha',
-      'specialty': 'Neurology',
-      'region': 'Bangalore',
-      'interactions': 42,
-    },
-    {
-      'name': 'Dr. Vikram',
-      'specialty': 'Orthopedics',
-      'region': 'Chennai',
-      'interactions': 15,
-    },
-    {
-      'name': 'Dr. Priya',
-      'specialty': 'Pediatrics',
-      'region': 'Mumbai',
-      'interactions': 60,
-    },
-    {
-      'name': 'Dr. Rohan',
-      'specialty': 'Dermatology',
-      'region': 'Pune',
-      'interactions': 32,
-    },
-    {
-      'name': 'Dr. Ayesha',
-      'specialty': 'General',
-      'region': 'Hyderabad',
-      'interactions': 18,
-    },
-    {
-      'name': 'Dr. Kapoor',
-      'specialty': 'Oncology',
-      'region': 'Delhi',
-      'interactions': 12,
-    },
-  ];
-
+  final ApiService _apiService = ApiService();
+  bool _isLoading = true;
+  List<Doctor> doctorData = [];
+  List<Interaction> interactionsData = [];
   bool showAsTable = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchDoctors();
+  }
+
+  Future<void> _fetchDoctors() async {
+    setState(() => _isLoading = true);
+    try {
+      final futures = await Future.wait([
+        _apiService.fetchDoctors(),
+        _apiService.fetchInteractions(),
+      ]);
+      setState(() {
+        doctorData = futures[0] as List<Doctor>;
+        interactionsData = futures[1] as List<Interaction>;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  int _getInteractionCountForDoctor(String doctorId) {
+    return interactionsData.where((i) => i.doctorId == doctorId).length;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -110,11 +98,10 @@ class _DoctorsPageState extends State<DoctorsPage> {
               height: 180,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(20),
-                image: const DecorationImage(
-                  image: NetworkImage(
-                    'https://images.unsplash.com/photo-1576091160550-2173ff9e5ee5?q=80&w=2000&auto=format&fit=crop',
-                  ),
-                  fit: BoxFit.cover,
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF0D47A1), Color(0xFF1976D2)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
                 boxShadow: [
                   BoxShadow(
@@ -129,7 +116,7 @@ class _DoctorsPageState extends State<DoctorsPage> {
                   borderRadius: BorderRadius.circular(20),
                   gradient: LinearGradient(
                     colors: [
-                      Colors.blueAccent.withOpacity(0.9),
+                      Colors.blueAccent.withOpacity(0.4),
                       Colors.transparent,
                     ],
                     begin: Alignment.bottomLeft,
@@ -185,15 +172,19 @@ class _DoctorsPageState extends State<DoctorsPage> {
             const SizedBox(height: 24),
 
             Expanded(
-              child: showAsTable
-                  ? _buildTableView()
-                        .animate()
-                        .fade(duration: 400.ms)
-                        .slideX(begin: 0.05)
-                  : _buildListView()
-                        .animate()
-                        .fade(duration: 400.ms)
-                        .slideX(begin: 0.05),
+              child: _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : doctorData.isEmpty
+                      ? const Center(child: Text('No doctors found.'))
+                      : showAsTable
+                          ? _buildTableView()
+                                .animate()
+                                .fade(duration: 400.ms)
+                                .slideX(begin: 0.05)
+                          : _buildListView()
+                                .animate()
+                                .fade(duration: 400.ms)
+                                .slideX(begin: 0.05),
             ),
           ].animate(interval: 50.ms).fade(duration: 400.ms),
         ),
@@ -262,45 +253,43 @@ class _DoctorsPageState extends State<DoctorsPage> {
                           ),
                           const SizedBox(width: 12),
                           Text(
-                            data['name'],
-                            style: const TextStyle(fontWeight: FontWeight.w600),
-                          ),
-                        ],
-                      ),
+                          data.name,
+                          style: const TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                      ],
                     ),
-                    DataCell(Text(data['specialty'])),
-                    DataCell(
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.grey.shade100,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: Colors.grey.shade300),
-                        ),
-                        child: Text(
-                          data['region'],
-                          style: TextStyle(
-                            color: Colors.grey.shade700,
-                            fontSize: 13,
-                          ),
-                        ),
+                  ),
+                  DataCell(Text(data.specialty)),
+                  DataCell(
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
                       ),
-                    ),
-                    // Highlighting High performers
-                    DataCell(
-                      Text(
-                        data['interactions'].toString(),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade100,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.grey.shade300),
+                      ),
+                      child: Text(
+                        data.region,
                         style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: data['interactions'] > 30
-                              ? Colors.green
-                              : Colors.black87,
+                          color: Colors.grey.shade700,
+                          fontSize: 13,
                         ),
                       ),
                     ),
+                  ),
+                  // Highlighting High performers
+                  DataCell(
+                    Text(
+                      _getInteractionCountForDoctor(data.id).toString(),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                    ),
+                  ),
                   ],
                 );
               }).toList(),
@@ -357,7 +346,7 @@ class _DoctorsPageState extends State<DoctorsPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            data['name'],
+                            data.name,
                             style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -365,7 +354,7 @@ class _DoctorsPageState extends State<DoctorsPage> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            '${data['specialty']} • ${data['region']}',
+                            '${data.specialty} • ${data.region}',
                             style: TextStyle(color: Colors.grey[600]),
                           ),
                         ],
@@ -374,15 +363,11 @@ class _DoctorsPageState extends State<DoctorsPage> {
                     Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: data['interactions'] > 30
-                                ? Colors.green.withOpacity(0.1)
-                                : Colors.blueAccent.withOpacity(0.1),
+                            color: Colors.blueAccent.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(12),
                             boxShadow: [
                               BoxShadow(
-                                color: data['interactions'] > 30
-                                    ? Colors.green.withOpacity(0.2)
-                                    : Colors.blueAccent.withOpacity(0.2),
+                                color: Colors.blueAccent.withOpacity(0.2),
                                 blurRadius: 8,
                               ),
                             ],
@@ -390,13 +375,11 @@ class _DoctorsPageState extends State<DoctorsPage> {
                           child: Column(
                             children: [
                               Text(
-                                data['interactions'].toString(),
-                                style: TextStyle(
+                                _getInteractionCountForDoctor(data.id).toString(),
+                                style: const TextStyle(
                                   fontSize: 20,
                                   fontWeight: FontWeight.bold,
-                                  color: data['interactions'] > 30
-                                      ? Colors.green
-                                      : Colors.blueAccent,
+                                  color: Colors.blueAccent,
                                 ),
                               ),
                               Text(

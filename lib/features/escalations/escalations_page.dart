@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../widgets/sidebar.dart';
 import '../../models/escalation.dart';
-import '../../services/supabase_service.dart';
+import '../../models/doctor.dart';
+import '../../services/api_service.dart';
+import '../../services/session_state.dart';
 
 class EscalationsPage extends StatefulWidget {
   const EscalationsPage({super.key});
@@ -14,8 +17,9 @@ class EscalationsPage extends StatefulWidget {
 class _EscalationsPageState extends State<EscalationsPage> {
   bool _isLoading = true;
   List<Escalation> escalations = [];
-  final SupabaseService _supabaseService = SupabaseService();
-  final List<String> availableTechnicians = [
+  List<Doctor> doctors = [];
+  final ApiService _apiService = ApiService();
+  List<String> availableTechnicians = [
     'Tech Alex',
     'Tech Sarah',
     'Tech Rahul',
@@ -31,25 +35,200 @@ class _EscalationsPageState extends State<EscalationsPage> {
   Future<void> _fetchEscalations() async {
     setState(() => _isLoading = true);
     try {
-      final data = await _supabaseService.fetchEscalations();
+      final futures = await Future.wait([
+        _apiService.fetchEscalations(),
+        _apiService.fetchDoctors(),
+        _apiService.fetchTechnicians(),
+      ]);
       setState(() {
-        escalations = data;
+        escalations = futures[0] as List<Escalation>;
+        doctors = futures[1] as List<Doctor>;
+        availableTechnicians = futures[2] as List<String>;
         _isLoading = false;
       });
     } catch (e) {
       setState(() => _isLoading = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error fetching escalations: $e')),
+          SnackBar(content: Text('Error fetching data: $e')),
         );
       }
     }
   }
 
+  void _showAddEscalationDialog() {
+    if (doctors.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No doctors available. Add a doctor first!')),
+      );
+      return;
+    }
+
+    String? selectedDoctorName = doctors.first.name;
+    final queryController = TextEditingController();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Container(
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+              ),
+              padding: EdgeInsets.only(
+                top: 24,
+                left: 24,
+                right: 24,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Register New Escalation',
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.close_rounded),
+                          onPressed: () => Navigator.pop(context),
+                        ),
+                      ],
+                    ),
+                    const Divider(),
+                    const SizedBox(height: 16),
+                    
+                    const Text(
+                      'Select Doctor',
+                      style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey),
+                    ),
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey.shade300),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          value: selectedDoctorName,
+                          isExpanded: true,
+                          items: doctors.map((doc) {
+                            return DropdownMenuItem<String>(
+                              value: doc.name,
+                              child: Text(doc.name),
+                            );
+                          }).toList(),
+                          onChanged: (val) {
+                            if (val != null) {
+                              setModalState(() => selectedDoctorName = val);
+                            }
+                          },
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    const Text(
+                      'Issue Query Details',
+                      style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey),
+                    ),
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: queryController,
+                      maxLines: 3,
+                      decoration: InputDecoration(
+                        hintText: 'What is the doctor\'s complaint or issue?',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.orange.shade700,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        onPressed: () async {
+                          if (queryController.text.trim().isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Please describe the issue query.')),
+                            );
+                            return;
+                           }
+                           Navigator.pop(context);
+                           setState(() => _isLoading = true);
+
+                           final payload = {
+                             'doctor_name': selectedDoctorName,
+                             'query': queryController.text.trim(),
+                             'status': 'Pending',
+                           };
+
+                           final result = await _apiService.createEscalation(payload);
+                           if (result != null) {
+                             ScaffoldMessenger.of(context).showSnackBar(
+                               const SnackBar(content: Text('Escalation registered successfully!')),
+                             );
+                           } else {
+                             // Fallback mock insert
+                             final localMock = Escalation(
+                               id: 'mock_${DateTime.now().millisecondsSinceEpoch}',
+                               doctorName: selectedDoctorName!,
+                               query: queryController.text.trim(),
+                               status: 'Pending',
+                               createdAt: DateTime.now(),
+                             );
+                             setState(() {
+                               escalations.insert(0, localMock);
+                             });
+                             ScaffoldMessenger.of(context).showSnackBar(
+                               const SnackBar(content: Text('Escalation saved locally (Backend Offline)')),
+                             );
+                           }
+                           _fetchEscalations();
+                        },
+                        child: const Text(
+                          'Submit Escalation',
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   Future<void> markResolved(int index) async {
     final e = escalations[index];
     try {
-      await _supabaseService.updateEscalationStatus(e.id, 'Resolved');
+      await _apiService.updateEscalationStatus(e.id, 'Resolved');
       setState(() {
         escalations[index] = Escalation(
           id: e.id,
@@ -77,7 +256,7 @@ class _EscalationsPageState extends State<EscalationsPage> {
   Future<void> assignTechnician(int index, String technician) async {
     final e = escalations[index];
     try {
-      await _supabaseService.updateEscalationTechnician(e.id, technician);
+      await _apiService.updateEscalationTechnician(e.id, technician);
       setState(() {
         escalations[index] = Escalation(
           id: e.id,
@@ -99,6 +278,18 @@ class _EscalationsPageState extends State<EscalationsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final user = Supabase.instance.client.auth.currentUser;
+    final String name = SessionState.getName(user?.userMetadata);
+    final String role = SessionState.getRole(user?.userMetadata);
+
+    final isRep = role == 'Medical Representative';
+    final isManager = role == 'Operations Manager';
+    final isTech = role == 'Technician';
+
+    final displayList = isTech
+        ? escalations.where((e) => e.assignedTo != null && e.assignedTo!.isNotEmpty).toList()
+        : escalations;
+
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
@@ -132,11 +323,10 @@ class _EscalationsPageState extends State<EscalationsPage> {
               height: 180,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(20),
-                image: const DecorationImage(
-                  image: NetworkImage(
-                    'https://images.unsplash.com/photo-1551076805-e18690c5e53b?q=80&w=2000&auto=format&fit=crop',
-                  ),
-                  fit: BoxFit.cover,
+                gradient: const LinearGradient(
+                  colors: [Color(0xFFE65100), Color(0xFFF57C00)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
                 boxShadow: [
                   BoxShadow(
@@ -151,7 +341,7 @@ class _EscalationsPageState extends State<EscalationsPage> {
                   borderRadius: BorderRadius.circular(20),
                   gradient: LinearGradient(
                     colors: [
-                      Colors.orange.shade800.withOpacity(0.9),
+                      Colors.orange.shade800.withOpacity(0.4),
                       Colors.transparent,
                     ],
                     begin: Alignment.bottomLeft,
@@ -206,18 +396,47 @@ class _EscalationsPageState extends State<EscalationsPage> {
             ),
             const SizedBox(height: 24),
 
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Escalation Logs',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
+                if (isRep)
+                  ElevatedButton.icon(
+                    onPressed: _showAddEscalationDialog,
+                    icon: const Icon(Icons.add_rounded),
+                    label: const Text('Register Escalation'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.orange.shade700,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 16),
+
             if (_isLoading)
               const Expanded(child: Center(child: CircularProgressIndicator()))
-            else if (escalations.isEmpty)
+            else if (displayList.isEmpty)
               const Expanded(
                 child: Center(child: Text('No escalations found.')),
               )
             else
               Expanded(
                 child: ListView.builder(
-                  itemCount: escalations.length,
+                  itemCount: displayList.length,
                   itemBuilder: (context, index) {
-                    final e = escalations[index];
+                    final e = displayList[index];
                     final isResolved = e.status == 'Resolved';
 
                     return Card(
@@ -328,7 +547,7 @@ class _EscalationsPageState extends State<EscalationsPage> {
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: [
-                                    // Assign technician dropdown
+                                    // Assign technician dropdown or label
                                     Expanded(
                                       child: isResolved
                                           ? Text(
@@ -338,86 +557,71 @@ class _EscalationsPageState extends State<EscalationsPage> {
                                                 fontWeight: FontWeight.bold,
                                               ),
                                             )
-                                          : Container(
-                                              height: 45,
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                    horizontal: 12,
+                                          : (isManager
+                                              ? Container(
+                                                  height: 45,
+                                                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                                                  decoration: BoxDecoration(
+                                                    border: Border.all(color: Colors.grey.shade300),
+                                                    borderRadius: BorderRadius.circular(8),
                                                   ),
-                                              decoration: BoxDecoration(
-                                                border: Border.all(
-                                                  color: Colors.grey.shade300,
-                                                ),
-                                                borderRadius:
-                                                    BorderRadius.circular(8),
-                                              ),
-                                              child: DropdownButtonHideUnderline(
-                                                child: DropdownButton<String>(
-                                                  value: e.assignedTo,
-                                                  hint: const Text(
-                                                    'Assign Technician',
-                                                  ),
-                                                  isExpanded: true,
-                                                  icon: const Icon(
-                                                    Icons.engineering_rounded,
-                                                  ),
-                                                  items: availableTechnicians
-                                                      .map((String tech) {
-                                                        return DropdownMenuItem<
-                                                          String
-                                                        >(
+                                                  child: DropdownButtonHideUnderline(
+                                                    child: DropdownButton<String>(
+                                                      value: e.assignedTo,
+                                                      hint: const Text('Assign Technician'),
+                                                      isExpanded: true,
+                                                      icon: const Icon(Icons.engineering_rounded),
+                                                      items: availableTechnicians.map((String tech) {
+                                                        return DropdownMenuItem<String>(
                                                           value: tech,
                                                           child: Text(tech),
                                                         );
-                                                      })
-                                                      .toList(),
-                                                  onChanged: (val) {
-                                                    if (val != null)
-                                                      assignTechnician(
-                                                        index,
-                                                        val,
-                                                      );
-                                                  },
-                                                ),
-                                              ),
-                                            ),
+                                                      }).toList(),
+                                                      onChanged: (val) {
+                                                        if (val != null) {
+                                                          final originalIndex = escalations.indexOf(e);
+                                                          assignTechnician(originalIndex, val);
+                                                        }
+                                                      },
+                                                    ),
+                                                  ),
+                                                )
+                                              : Text(
+                                                  e.assignedTo != null && e.assignedTo!.isNotEmpty
+                                                      ? 'Assigned to: ${e.assignedTo}'
+                                                      : 'Assigned to: Not Assigned',
+                                                  style: const TextStyle(
+                                                    color: Colors.blueAccent,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                )),
                                     ),
                                     const SizedBox(width: 16),
-                                    // Resolve Button
-                                    if (!isResolved)
+                                    // Resolve Button (Only visible to Technicians)
+                                    if (!isResolved && isTech)
                                       ElevatedButton.icon(
-                                            onPressed: () =>
-                                                markResolved(index),
-                                            icon: const Icon(
-                                              Icons.check_circle_outline,
-                                            ),
-                                            label: const Text('Resolve'),
-                                            style: ElevatedButton.styleFrom(
-                                              backgroundColor: Colors.green,
-                                              foregroundColor: Colors.white,
-                                              elevation: 4,
-                                              shadowColor: Colors.green
-                                                  .withOpacity(0.4),
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                    horizontal: 20,
-                                                    vertical: 12,
-                                                  ),
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(8),
-                                              ),
-                                            ),
-                                          )
-                                          .animate(
-                                            onPlay: (controller) =>
-                                                controller.repeat(),
-                                          )
-                                          .shimmer(
-                                            duration: 2500.ms,
-                                            color: Colors.white30,
-                                            angle: 0.5,
+                                        onPressed: () {
+                                          final originalIndex = escalations.indexOf(e);
+                                          markResolved(originalIndex);
+                                        },
+                                        icon: const Icon(
+                                          Icons.check_circle_outline,
+                                        ),
+                                        label: const Text('Resolve'),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.green,
+                                          foregroundColor: Colors.white,
+                                          elevation: 4,
+                                          shadowColor: Colors.green.withOpacity(0.4),
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 20,
+                                            vertical: 12,
                                           ),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                        ),
+                                      ),
                                   ],
                                 ),
                               ],

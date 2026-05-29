@@ -1,5 +1,5 @@
 class Escalation {
-  final int id;
+  final String id;
   final String doctorName;
   final String query;
   final String status;
@@ -17,12 +17,14 @@ class Escalation {
 
   factory Escalation.fromMap(Map<String, dynamic> m) {
     return Escalation(
-      id: m['id'] is int ? m['id'] : int.parse('${m['id']}'),
+      id: m['_id'] ?? m['id']?.toString() ?? '',
       doctorName: m['doctor_name'] ?? '',
       query: m['query'] ?? '',
       status: m['status'] ?? '',
       assignedTo: m['assigned_to'],
-      createdAt: m['created_at'] != null ? DateTime.parse(m['created_at']) : null,
+      createdAt: m['created_at'] != null 
+          ? DateTime.tryParse(m['created_at']) 
+          : (m['createdAt'] != null ? DateTime.tryParse(m['createdAt']) : null),
     );
   }
 

@@ -1,23 +1,42 @@
 class Interaction {
-  final int id;
-  final int doctorId;
-  final String query;
-  final String response;
-  final DateTime? timestamp;
+  final String id;
+  final String doctorId;
+  final String doctorName;
+  final String notes;
+  final String type;
+  final DateTime? date;
 
   Interaction({
     required this.id,
     required this.doctorId,
-    required this.query,
-    required this.response,
-    this.timestamp,
+    required this.doctorName,
+    required this.notes,
+    required this.type,
+    this.date,
   });
 
-  factory Interaction.fromMap(Map<String, dynamic> m) => Interaction(
-        id: m['id'] is int ? m['id'] : int.parse('${m['id']}'),
-        doctorId: m['doctor_id'] is int ? m['doctor_id'] : int.parse('${m['doctor_id']}'),
-        query: m['query'] ?? '',
-        response: m['response'] ?? '',
-        timestamp: m['timestamp'] != null ? DateTime.parse(m['timestamp']) : null,
-      );
+  factory Interaction.fromMap(Map<String, dynamic> m) {
+    String docId = '';
+    String docName = '';
+    
+    if (m['doctor'] is Map) {
+      final docMap = m['doctor'] as Map<String, dynamic>;
+      docId = docMap['_id'] ?? docMap['id']?.toString() ?? '';
+      docName = docMap['name'] ?? '';
+    } else {
+      docId = m['doctor']?.toString() ?? m['doctor_id']?.toString() ?? '';
+    }
+
+    return Interaction(
+      id: m['_id'] ?? m['id']?.toString() ?? '',
+      doctorId: docId,
+      doctorName: docName,
+      notes: m['notes'] ?? m['query'] ?? '',
+      type: m['type'] ?? m['response'] ?? 'In-person',
+      date: m['date'] != null 
+          ? DateTime.tryParse(m['date']) 
+          : (m['timestamp'] != null ? DateTime.tryParse(m['timestamp']) : null),
+    );
+  }
 }
+

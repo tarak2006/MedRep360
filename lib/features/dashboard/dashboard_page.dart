@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../services/session_state.dart';
 import '../../widgets/dashboard_card.dart';
 import '../../widgets/sidebar.dart';
-import '../../services/supabase_service.dart';
+import '../../services/api_service.dart';
 import '../../models/escalation.dart';
 import '../../models/interaction.dart';
 import '../../models/doctor.dart';
+import '../doctors/doctors_page.dart';
+import '../escalations/escalations_page.dart';
+import '../interactions/interactions_page.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -15,7 +20,7 @@ class DashboardPage extends StatefulWidget {
 }
 
 class _DashboardPageState extends State<DashboardPage> {
-  final SupabaseService _supabaseService = SupabaseService();
+  final ApiService _apiService = ApiService();
   bool _isLoading = true;
 
   List<Escalation> _escalations = [];
@@ -32,9 +37,9 @@ class _DashboardPageState extends State<DashboardPage> {
     setState(() => _isLoading = true);
     try {
       final futures = await Future.wait([
-        _supabaseService.fetchEscalations(),
-        _supabaseService.fetchInteractions(),
-        _supabaseService.fetchDoctors(),
+        _apiService.fetchEscalations(),
+        _apiService.fetchInteractions(),
+        _apiService.fetchDoctors(),
       ]);
       setState(() {
         _escalations = futures[0] as List<Escalation>;
@@ -47,7 +52,7 @@ class _DashboardPageState extends State<DashboardPage> {
     }
   }
 
-  String _getDoctorName(int doctorId) {
+  String _getDoctorName(String doctorId) {
     final doc = _doctors.where((d) => d.id == doctorId).firstOrNull;
     return doc?.name ?? 'Unknown Doctor';
   }
@@ -61,30 +66,45 @@ class _DashboardPageState extends State<DashboardPage> {
       );
     }
 
-    // Prepare recent activities from interactions
-    final recentActivities = _interactions.map((i) {
-      return {
-        'doctor': _getDoctorName(i.doctorId),
-        'action': 'Interaction: ${i.query}',
-        'time': i.timestamp?.toString().substring(0, 10) ?? 'Recent',
-        'icon': Icons.chat_bubble_outline,
-        'color': Colors.blue
-      };
-    }).toList();
+    final user = Supabase.instance.client.auth.currentUser;
+    final String name = SessionState.getName(user?.userMetadata);
+    final String role = SessionState.getRole(user?.userMetadata);
 
-    // Adding some escalations as recent activities too
-    final escalationActivities = _escalations.map((e) {
-      return {
-        'doctor': e.doctorName,
-        'action': 'Escalation: ${e.status}',
-        'time': e.createdAt?.toString().substring(0, 10) ?? 'Recent',
-        'icon': e.status == 'Resolved' ? Icons.check_circle_outline : Icons.warning_amber_rounded,
-        'color': e.status == 'Resolved' ? Colors.green : Colors.orange
-      };
-    });
-    
-    recentActivities.addAll(escalationActivities);
-    // Sort logic could be added here if timestamp is reliable
+    final isRep = role == 'Medical Representative';
+    final isManager = role == 'Operations Manager';
+    final isTech = role == 'Technician';
+
+    // Prepare recent activities based on role
+    final List<Map<String, dynamic>> recentActivities = [];
+
+    if (isRep || isManager) {
+      recentActivities.addAll(_interactions.map((i) {
+        final docName = i.doctorName.isNotEmpty ? i.doctorName : _getDoctorName(i.doctorId);
+        return {
+          'doctor': docName,
+          'action': 'Interaction: ${i.notes}',
+          'time': i.date?.toLocal().toString().substring(0, 10) ?? 'Recent',
+          'icon': Icons.chat_bubble_outline,
+          'color': Colors.blue
+        };
+      }));
+    }
+
+    if (isManager || isTech) {
+      final relevantEscalations = isTech
+          ? _escalations.where((e) => e.assignedTo != null && e.assignedTo!.isNotEmpty)
+          : _escalations;
+
+      recentActivities.addAll(relevantEscalations.map((e) {
+        return {
+          'doctor': e.doctorName,
+          'action': 'Escalation: ${e.status}',
+          'time': e.createdAt?.toLocal().toString().substring(0, 10) ?? 'Recent',
+          'icon': e.status == 'Resolved' ? Icons.check_circle_outline : Icons.warning_amber_rounded,
+          'color': e.status == 'Resolved' ? Colors.green : Colors.orange
+        };
+      }));
+    }
 
 
     return Scaffold(
@@ -132,9 +152,10 @@ class _DashboardPageState extends State<DashboardPage> {
               height: 200,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(20),
-                image: const DecorationImage(
-                  image: NetworkImage('https://images.unsplash.com/photo-1551076805-e18690c5e53b?q=80&w=2000&auto=format&fit=crop'),
-                  fit: BoxFit.cover,
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF1565C0), Color(0xFF42A5F5)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
                 boxShadow: [
                   BoxShadow(
@@ -158,14 +179,14 @@ class _DashboardPageState extends State<DashboardPage> {
                   mainAxisAlignment: MainAxisAlignment.end,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Welcome to MedRep 360',
-                      style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: Colors.white),
+                    Text(
+                      'Welcome, $name',
+                      style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: Colors.white),
                     ).animate().fade().slideY(begin: 0.3),
                     const SizedBox(height: 8),
-                    const Text(
-                      'Your comprehensive dashboard for medical representative operations.',
-                      style: TextStyle(fontSize: 16, color: Colors.white70),
+                    Text(
+                      'Logged in as $role • medrep360 workspace',
+                      style: const TextStyle(fontSize: 16, color: Colors.white70),
                     ).animate().fade(delay: 200.ms).slideY(begin: 0.3),
                   ],
                 ),
@@ -177,40 +198,97 @@ class _DashboardPageState extends State<DashboardPage> {
             LayoutBuilder(
               builder: (context, constraints) {
                 int crossAxisCount = constraints.maxWidth > 1000 ? 4 : constraints.maxWidth > 600 ? 2 : 1;
+                
+                final List<Widget> cards = [];
+
+                if (isRep || isManager) {
+                  cards.add(
+                    InkWell(
+                      borderRadius: BorderRadius.circular(16),
+                      onTap: () {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(builder: (context) => const DoctorsPage()),
+                        );
+                      },
+                      child: DashboardCard(
+                        title: 'Total Doctors',
+                        value: '${_doctors.length}',
+                        icon: Icons.personal_injury_rounded,
+                      ),
+                    ),
+                  );
+                  cards.add(
+                    InkWell(
+                      borderRadius: BorderRadius.circular(16),
+                      onTap: () {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(builder: (context) => const InteractionsPage()),
+                        );
+                      },
+                      child: DashboardCard(
+                        title: 'Total Interactions',
+                        value: '${_interactions.length}',
+                        icon: Icons.forum_rounded,
+                      ),
+                    ),
+                  );
+                }
+
+                if (isManager || isTech) {
+                  final relevantEscalations = isTech
+                      ? _escalations.where((e) => e.assignedTo != null && e.assignedTo!.isNotEmpty).toList()
+                      : _escalations;
+
+                  cards.add(
+                    InkWell(
+                      borderRadius: BorderRadius.circular(16),
+                      onTap: () {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(builder: (context) => const EscalationsPage()),
+                        );
+                      },
+                      child: DashboardCard(
+                        title: isTech ? 'My Pending Issues' : 'Pending Escalations',
+                        value: '${relevantEscalations.where((e) => e.status != 'Resolved').length}',
+                        icon: Icons.warning_rounded,
+                      ),
+                    ),
+                  );
+                  cards.add(
+                    InkWell(
+                      borderRadius: BorderRadius.circular(16),
+                      onTap: () {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(builder: (context) => const EscalationsPage()),
+                        );
+                      },
+                      child: DashboardCard(
+                        title: isTech ? 'My Resolved Issues' : 'Resolved Escalations',
+                        value: '${relevantEscalations.where((e) => e.status == 'Resolved').length}',
+                        icon: Icons.task_alt_rounded,
+                      ),
+                    ),
+                  );
+                }
+
                 return GridView.count(
-                  crossAxisCount: crossAxisCount,
+                  crossAxisCount: crossAxisCount > cards.length ? cards.length : crossAxisCount,
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   mainAxisSpacing: 16,
                   crossAxisSpacing: 16,
-                  childAspectRatio: constraints.maxWidth > 800 ? 2.8 : 3.0, 
-                  children: [
-                    DashboardCard(
-                      title: 'Total Doctors',
-                      value: '${_doctors.length}',
-                      icon: Icons.personal_injury_rounded,
-                    ),
-                    DashboardCard(
-                      title: 'Total Interactions',
-                      value: '${_interactions.length}',
-                      icon: Icons.forum_rounded,
-                    ),
-                    DashboardCard(
-                      title: 'Pending Escalations',
-                      value: '${_escalations.where((e) => e.status != 'Resolved').length}',
-                      icon: Icons.warning_rounded,
-                    ),
-                    DashboardCard(
-                      title: 'Resolved',
-                      value: '${_escalations.where((e) => e.status == 'Resolved').length}',
-                      icon: Icons.task_alt_rounded,
-                    ),
-                  ].animate(interval: 100.ms).fade(duration: 500.ms).scale(begin: const Offset(0.9, 0.9)),
+                  childAspectRatio: constraints.maxWidth > 800 ? 2.0 : 2.4, 
+                  children: cards.animate(interval: 100.ms).fade(duration: 500.ms).scale(begin: const Offset(0.9, 0.9)),
                 );
               }
             ),
             
             const SizedBox(height: 36),
+
             
             // Recent Activity Section
             const Text(

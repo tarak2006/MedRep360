@@ -4,6 +4,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'register_page.dart';
 import '../../services/auth_service.dart';
 import '../dashboard/dashboard_page.dart';
+import '../../services/session_state.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -26,6 +27,7 @@ class _LoginPageState extends State<LoginPage> {
     try {
       final response = await _authService.signInWithEmail(email, password);
       if (response.user != null) {
+        SessionState.clear();
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Login successful!')),
         );
