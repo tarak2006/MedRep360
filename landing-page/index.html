@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="MedRep 360 - Transforming Pharma Engagement with Autonomous AI.">
+  <title>MedRep 360 | Autonomous AI Medical Representative</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Plus+Jakarta+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="#" class="logo">
+        <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+        </svg>
+        <span>MedRep <span class="accent-text">360</span></span>
+      </a>
+      <div class="nav-links">
+        <a href="#challenge" class="scramble-hover">The Challenge</a>
+        <a href="#pillars" class="scramble-hover">AI Representative</a>
+        <a href="#omnichannel" class="scramble-hover">Omnichannel</a>
+        <a href="#comparison" class="scramble-hover">Advantage</a>
+        <a href="#contact" class="scramble-hover">Contact</a>
+        <a href="https://storage.googleapis.com/medrep360-web-tarak/index.html" class="nav-btn" target="_blank">Launch App</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <header class="hero">
+    <div class="hero-bg">
+      <div class="gradient-sphere sphere-1"></div>
+      <div class="gradient-sphere sphere-2"></div>
+      <canvas id="scanner-bg"></canvas>
+    </div>
+    <div class="hero-container">
+      <div class="hero-content">
+        <div class="badge scramble-load">Autonomous AI Agent</div>
+        <h1 class="hero-title">
+          <span class="scramble-load-heading">Transforming Pharma Engagement </span>
+          <span class="gradient-text scramble-load-heading">with Autonomous AI</span>
+        </h1>
+        <p class="hero-subtitle">The AI-Powered Virtual Medical Representative for Modern Pharma</p>
+        <p class="hero-desc">MedRep 360 helps pharmaceutical companies engage doctors at scale through AI-powered, multilingual interactions across WhatsApp, web, voice, and email. Deliver personalized product detailing, clinical intelligence, and continuous engagement—without the limitations of traditional field-force models.</p>
+        
+        <div class="hero-highlights">
+          <div class="highlight-title">Smarter. Faster. Scalable.</div>
+          <ul class="highlight-list">
+            <li><span class="chk">✓</span> AI-Powered Doctor Engagement</li>
+            <li><span class="chk">✓</span> Omnichannel Communication</li>
+            <li><span class="chk">✓</span> Multilingual & Rural Reach</li>
+            <li><span class="chk">✓</span> Compliance-Ready Workflows</li>
+            <li><span class="chk">✓</span> Real-Time Analytics & Insights</li>
+          </ul>
+        </div>
+
+        <div class="hero-ctas">
+          <a href="#contact" class="btn primary-btn">
+            Request a Demo
+            <svg class="btn-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+          </a>
+          <a href="#contact" class="btn secondary-btn">Become a Pilot Partner</a>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <div class="dashboard-mockup">
+          <div class="mockup-header">
+            <div class="mockup-dots"><span></span><span></span><span></span></div>
+            <div class="mockup-address">medrep360.cc/portal</div>
+          </div>
+          <div class="mockup-body">
+            <div class="mockup-sidebar">
+              <div class="mockup-item active"></div>
+              <div class="mockup-item"></div>
+              <div class="mockup-item"></div>
+            </div>
+            <div class="mockup-content">
+              <div class="mockup-card card-large"></div>
+              <div class="mockup-grid">
+                <div class="mockup-card"></div>
+                <div class="mockup-card"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- The Challenge Section -->
+  <section id="challenge" class="challenge">
+    <div class="section-header">
+      <h2>Traditional Pharma Engagement is Reaching Its Limits</h2>
+      <p>Pharma companies continue to invest heavily in medical representatives, yet face increasing operational and scaling challenges.</p>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="1" x2="12" y2="23"></line>
+            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+          </svg>
+        </div>
+        <h3>High Operational Costs</h3>
+        <p>Rising field-force acquisition and attrition costs continue to squeeze commercial operating margins.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+            <circle cx="12" cy="10" r="3"></circle>
+          </svg>
+        </div>
+        <h3>Limited Geographic Reach</h3>
+        <p>Traditional field forces struggle to effectively reach and engage doctors beyond major metropolitan markets.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+          </svg>
+        </div>
+        <h3>Inconsistent Messaging</h3>
+        <p>Maintaining compliant, evidence-based, and consistent doctor detailing across large manual teams is highly complex.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+            <circle cx="12" cy="12" r="3"></circle>
+          </svg>
+        </div>
+        <h3>Low Visibility</h3>
+        <p>Pharma companies suffer from extremely low visibility into the real-world effectiveness of manual doctor interactions.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+            <line x1="8" y1="21" x2="16" y2="21"></line>
+            <line x1="12" y1="17" x2="12" y2="21"></line>
+          </svg>
+        </div>
+        <h3>Digital-First Preference</h3>
+        <p>Modern healthcare professionals increasingly prefer digital, on-demand, and asynchronous communication models.</p>
+      </div>
+    </div>
+    <div class="challenge-footer">
+      <p>At the same time, healthcare AI adoption is accelerating globally as organizations seek scalable and intelligent engagement models.</p>
+    </div>
+  </section>
+
+  <!-- Introducing MedRep 360 & Core Pillars -->
+  <section id="pillars" class="pillars-section">
+    <div class="section-header">
+      <h2>Your Autonomous AI Medical Representative</h2>
+      <p>MedRep 360 is an AI-powered engagement platform that autonomously interacts with healthcare professionals, delivering personalized, evidence-based, and compliant communication anytime, anywhere.</p>
+    </div>
+    <div class="pillars-grid">
+      <div class="pillar-card">
+        <div class="pillar-num">01</div>
+        <h3>AI-Powered Product Detailing</h3>
+        <p>Deliver compliant brand messaging, clinical updates, and medical product information through intelligent, conversational detailing.</p>
+      </div>
+
+      <div class="pillar-card">
+        <div class="pillar-num">02</div>
+        <h3>Clinical Intelligence Engine</h3>
+        <p>Provide instant, evidence-based access to dosage guidance, clinical indications, research studies, and treatment protocols.</p>
+      </div>
+
+      <div class="pillar-card">
+        <div class="pillar-num">03</div>
+        <h3>Personalized Doctor Engagement</h3>
+        <p>Dynamically adapt interactions based on physician specialty, preferences, historical logs, and communication behaviors.</p>
+      </div>
+
+      <div class="pillar-card">
+        <div class="pillar-num">04</div>
+        <h3>Human Escalation When Needed</h3>
+        <p>Complex, niche, or critical medical conversations are seamlessly routed to your human medical affairs or sales teams.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Omnichannel Engagement Section -->
+  <section id="omnichannel" class="omnichannel">
+    <div class="section-header">
+      <h2>Meet Doctors Where They Already Are</h2>
+      <p>One intelligent engagement engine powering every key communication touchpoint.</p>
+    </div>
+    <div class="channel-grid">
+      <div class="channel-card">
+        <div class="channel-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+          </svg>
+        </div>
+        <h4>WhatsApp</h4>
+        <p>Conversational, direct engagement, automated reminders, and instant follow-ups.</p>
+      </div>
+
+      <div class="channel-card">
+        <div class="channel-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="2" y1="12" x2="22" y2="12"></line>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+          </svg>
+        </div>
+        <h4>Web Portal</h4>
+        <p>Highly interactive detailing layouts, digital brochures, and educational video modules.</p>
+      </div>
+
+      <div class="channel-card">
+        <div class="channel-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+            <path d="M19 10v1a7 7 0 0 1-14 0v-1"></path>
+            <line x1="12" y1="19" x2="12" y2="23"></line>
+            <line x1="8" y1="23" x2="16" y2="23"></line>
+          </svg>
+        </div>
+        <h4>Voice AI</h4>
+        <p>Natural, multilingual voice-based detailing and automated outbound tele-detailing.</p>
+      </div>
+
+      <div class="channel-card">
+        <div class="channel-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+            <polyline points="22,6 12,13 2,6"></polyline>
+          </svg>
+        </div>
+        <h4>Email</h4>
+        <p>Automated campaigns, personalized clinical reports, and medical research updates.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Why Choose MedRep 360 -->
+  <section id="why" class="why-us">
+    <div class="section-header">
+      <h2>Built for the Future of Healthcare Engagement</h2>
+      <p>Deliver compliance-ready, highly analytical, and infinitely scalable pharma detailing.</p>
+    </div>
+    <div class="why-grid">
+      <div class="why-card">
+        <h3>Reduce Engagement Costs</h3>
+        <p>Drastically lower your direct doctor engagement and field operations overhead by up to **70%**.</p>
+      </div>
+
+      <div class="why-card">
+        <h3>Expand Market Reach</h3>
+        <p>Instantly scale your operations to reach doctors in Tier 2, Tier 3, and rural communities.</p>
+      </div>
+
+      <div class="why-card">
+        <h3>Improve Engagement Quality</h3>
+        <p>Ensure that all medical communications are consistent, compliant, and strictly evidence-based.</p>
+      </div>
+
+      <div class="why-card">
+        <h3>Enable Data-Driven Decisions</h3>
+        <p>Capture real-time analytics on doctor interests, therapeutic preferences, and campaign outcomes.</p>
+      </div>
+
+      <div class="why-card">
+        <h3>Accelerate Product Adoption</h3>
+        <p>Drive faster physician awareness, medical education, and clinical adoption of newly launched products.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Competitive Advantage & Table -->
+  <section id="comparison" class="comparison">
+    <div class="section-header">
+      <h2>The Missing AI Engagement Layer in Pharma</h2>
+      <p>How MedRep 360 sits uniquely alongside existing enterprise pharma and sales solutions.</p>
+    </div>
+    
+    <div class="table-container">
+      <table class="comp-table">
+        <thead>
+          <tr>
+            <th>Existing Platforms</th>
+            <th>What They Do</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>IQVIA</strong></td>
+            <td>Analytics & insights</td>
+          </tr>
+          <tr>
+            <td><strong>Veeva</strong></td>
+            <td>CRM & workflows</td>
+          </tr>
+          <tr>
+            <td><strong>Salesforce</strong></td>
+            <td>Commercial operations</td>
+          </tr>
+          <tr>
+            <td><strong>Traditional MRs</strong></td>
+            <td>Physical doctor engagement</td>
+          </tr>
+          <tr class="highlight-row">
+            <td><strong>MedRep 360</strong></td>
+            <td>Autonomous doctor engagement through AI</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="delivers-container">
+      <h3>MedRep 360 Delivers:</h3>
+      <ul class="delivers-list">
+        <li><span>✦</span> Autonomous AI-to-doctor interactions</li>
+        <li><span>✦</span> Omnichannel engagement workflows</li>
+        <li><span>✦</span> Multilingual healthcare communication</li>
+        <li><span>✦</span> Human-in-the-loop escalation</li>
+        <li><span>✦</span> Real-time engagement intelligence</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Built for Emerging Markets & The Future -->
+  <section id="markets" class="markets-section">
+    <div class="markets-container">
+      <div class="market-box">
+        <div class="badge">Market Fit</div>
+        <h3>Designed for India. Scalable Globally.</h3>
+        <p>MedRep 360 is optimized specifically for emerging markets, built from the ground up to support:</p>
+        <ul class="market-list">
+          <li>WhatsApp-first engagement workflows</li>
+          <li>Low-bandwidth/network-restricted environments</li>
+          <li>Local multilingual speech and text interactions</li>
+          <li>Distributed and decentralized healthcare systems</li>
+          <li>Rural and historically underserved medical markets</li>
+        </ul>
+        <div class="market-regions">Scaling from India to Southeast Asia, Africa, and Latin America.</div>
+      </div>
+      <div class="future-box">
+        <div class="badge">Vision</div>
+        <h3>The Future of Pharma Engagement</h3>
+        <p>Healthcare engagement is shifting from traditional workflows to intelligent AI-driven interactions. Industry leaders are increasingly investing in agentic AI, conversational healthcare platforms, and autonomous engagement systems.</p>
+        <div class="intersection-tags">
+          <span>Agentic AI</span>
+          <span>Healthcare AI</span>
+          <span>Omnichannel Engagement</span>
+          <span>Pharma Digital Transformation</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Call to Action Section -->
+  <section id="contact" class="cta-banner">
+    <h2>Ready to Pilot the Future of Pharma Engagement?</h2>
+    <p>Partner with MedRep 360 to explore how autonomous AI can transform doctor engagement, improve commercial efficiency, and expand healthcare access.</p>
+    
+    <div class="cta-buttons">
+      <a href="mailto:contact@caare.in?subject=MedRep 360 Demo Request" class="btn primary-btn">Book a Demo</a>
+      <a href="mailto:contact@caare.in?subject=MedRep 360 Pilot Inquiry" class="btn secondary-btn">Explore Pilot Programs</a>
+      <a href="mailto:contact@caare.in?subject=MedRep 360 Partnership" class="btn secondary-btn">Partner With Us</a>
+    </div>
+
+    <div class="contact-details">
+      <div class="contact-name">Chandramouli Samatham</div>
+      <div class="contact-title">Founder & CEO, Caare Healthtech</div>
+      <div class="contact-links">
+        <a href="mailto:contact@caare.in" class="email-link">📧 contact@caare.in</a>
+        <a href="https://caare.in" class="web-link" target="_blank">🌐 Caare Healthtech</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p>MedRep 360 - The AI Workforce Layer for Pharma Engagement 🚀</p>
+    <p>&copy; 2026 Caare Healthtech. Managed on GCP for medrep360.cc</p>
+  </footer>
+
+  <script>
+    // Text Scrambler Animation
+    class Scrambler {
+      constructor(el) {
+        this.el = el;
+        this.originalText = el.innerText;
+        this.chars = '!<>-_\\/[]{}—=+*^?#________';
+        this.frame = 0;
+        this.queue = [];
+        this.isScrambling = false;
+      }
+      scramble() {
+        if (!this.isScrambling) {
+          this.isScrambling = true;
+        }
+        const length = this.originalText.length;
+        this.queue = [];
+        for (let i = 0; i < length; i++) {
+          const from = this.el.innerText[i] || '';
+          const to = this.originalText[i] || '';
+          const start = Math.floor(Math.random() * 45);
+          const end = start + Math.floor(Math.random() * 55);
+          this.queue.push({ from, to, start, end, char: '' });
+        }
+        cancelAnimationFrame(this.frameRequest);
+        this.frame = 0;
+        this.update();
+      }
+      update() {
+        let output = '';
+        let complete = 0;
+        for (let i = 0; i < this.queue.length; i++) {
+          let { from, to, start, end, char } = this.queue[i];
+          if (this.frame >= end) {
+            complete++;
+            output += to;
+          } else if (this.frame >= start) {
+            if (!char || Math.random() < 0.28) {
+              char = this.chars[Math.floor(Math.random() * this.chars.length)];
+              this.queue[i].char = char;
+            }
+            output += `<span class="scramble-char">${char}</span>`;
+          } else {
+            output += from;
+          }
+        }
+        this.el.innerHTML = output;
+        if (complete === this.queue.length) {
+          this.isScrambling = false;
+        } else {
+          this.frameRequest = requestAnimationFrame(() => this.update());
+          this.frame++;
+        }
+      }
+    }
+
+    // Apply Scramble on Load
+    document.querySelectorAll('.scramble-load, .scramble-load-heading').forEach(el => {
+      const s = new Scrambler(el);
+      s.scramble();
+    });
+
+    // Apply Scramble on Hover
+    document.querySelectorAll('.scramble-hover').forEach(el => {
+      const s = new Scrambler(el);
+      el.addEventListener('mouseenter', () => s.scramble());
+    });
+
+    // Canvas Grid & Interactive Vector Field Animation (Google Antigravity style)
+    const canvas = document.getElementById('scanner-bg');
+    if (canvas) {
+      const ctx = canvas.getContext('2d');
+      let w = 0;
+      let h = 0;
+      let vectors = [];
+      const spacing = 38; // Spacing between vector nodes for a clean, dense layout
+
+      function resizeCanvas() {
+        const dpr = window.devicePixelRatio || 1;
+        const rect = canvas.getBoundingClientRect();
+        canvas.width = rect.width * dpr;
+        canvas.height = rect.height * dpr;
+        ctx.scale(dpr, dpr);
+        w = rect.width;
+        h = rect.height;
+        initVectors();
+      }
+
+      function initVectors() {
+        vectors = [];
+        for (let x = spacing / 2; x < w; x += spacing) {
+          for (let y = spacing / 2; y < h; y += spacing) {
+            // High-end Google Antigravity Spatial Colors
+            let color = { r: 129, g: 140, b: 248 }; // Default Indigo
+            const ratioX = x / w;
+            
+            if (ratioX < 0.35) {
+              // Left: Magenta/Pink
+              color = { r: 236, g: 72, b: 153 };
+            } else if (ratioX < 0.65) {
+              // Middle: Indigo/Purple
+              color = { r: 129, g: 140, b: 248 };
+            } else {
+              // Right: Sky Blue/Cyan
+              color = { r: 56, g: 189, b: 248 };
+            }
+
+            vectors.push({
+              x: x,
+              y: y,
+              angle: Math.random() * Math.PI * 2, // start randomized
+              color: color,
+              maxLength: 11
+            });
+          }
+        }
+      }
+
+      resizeCanvas();
+      window.addEventListener('resize', resizeCanvas);
+
+      // Global Mouse Proximity Coordinates
+      let mouse = { x: -1000, y: -1000, active: false };
+      window.addEventListener('mousemove', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        mouse.x = e.clientX - rect.left;
+        mouse.y = e.clientY - rect.top;
+        mouse.active = true;
+      });
+
+      window.addEventListener('mouseleave', () => {
+        mouse.active = false;
+        mouse.x = -1000;
+        mouse.y = -1000;
+      });
+
+      function animate() {
+        ctx.clearRect(0, 0, w, h);
+
+        const time = Date.now() * 0.0012;
+        
+        // Define target coordinates: either cursor or circular ambient path
+        let targetX = mouse.x;
+        let targetY = mouse.y;
+
+        if (!mouse.active) {
+          // Circular virtual target to keep ambient flow alive when mouse is not active
+          targetX = w / 2 + Math.cos(time * 0.6) * (w / 3.5);
+          targetY = h / 2 + Math.sin(time * 0.4) * (h / 3);
+        }
+
+        // Draw ambient background radial spotlight tracking the target
+        const spotAlpha = mouse.active ? 0.09 : 0.035;
+        const radialGlow = ctx.createRadialGradient(targetX, targetY, 0, targetX, targetY, 280);
+        radialGlow.addColorStop(0, `rgba(56, 189, 248, ${spotAlpha})`);
+        radialGlow.addColorStop(1, 'rgba(56, 189, 248, 0)');
+        ctx.fillStyle = radialGlow;
+        ctx.fillRect(0, 0, w, h);
+
+        // Update and draw vector dashes
+        vectors.forEach(v => {
+          const dx = targetX - v.x;
+          const dy = targetY - v.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+
+          // Rotate dynamically to target angle pointing to cursor/target
+          const targetAngle = Math.atan2(dy, dx);
+          
+          // Smooth rotation Lerp (handling wrap-around angles cleanly)
+          let angleDiff = targetAngle - v.angle;
+          while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
+          while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
+          v.angle += angleDiff * 0.08; // Lerp velocity
+
+          // Proximity brightness/length multiplier decay
+          const maxDistance = 380;
+          let intensity = 0;
+
+          if (mouse.active) {
+            intensity = Math.max(0, 1 - dist / maxDistance);
+            // Apply easing curves for punchy focus near cursor
+            intensity = Math.pow(intensity, 1.4);
+          } else {
+            // Ambient intensity is smaller and more uniform
+            intensity = Math.max(0, 0.45 - dist / (maxDistance * 1.6));
+            intensity = Math.pow(intensity, 1.2) * 0.7;
+          }
+
+          // Length of dashes: larger when closer to target
+          const dashLen = 2.0 + intensity * v.maxLength;
+          
+          // Dynamic alpha: active highlight or ambient baseline visibility
+          const opacity = Math.max(0.045, intensity * 0.75);
+
+          // Draw baseline tiny pivot point dot
+          ctx.fillStyle = `rgba(255, 255, 255, ${Math.max(0.04, intensity * 0.12)})`;
+          ctx.fillRect(v.x - 0.7, v.y - 0.7, 1.4, 1.4);
+
+          // Draw the vector dash starting at node position and extending in angle direction
+          const endX = v.x + Math.cos(v.angle) * dashLen;
+          const endY = v.y + Math.sin(v.angle) * dashLen;
+
+          ctx.strokeStyle = `rgba(${v.color.r}, ${v.color.g}, ${v.color.b}, ${opacity})`;
+          ctx.lineWidth = 1.6;
+          ctx.lineCap = 'round';
+          ctx.beginPath();
+          ctx.moveTo(v.x, v.y);
+          ctx.lineTo(endX, endY);
+          ctx.stroke();
+        });
+
+        requestAnimationFrame(animate);
+      }
+      animate();
+    }
+
+    // Card 3D Tilt & Mouse Highlight reflection integration
+    const cards = document.querySelectorAll('.feature-card, .pillar-card, .channel-card, .why-card, .dashboard-mockup');
+    cards.forEach(card => {
+      const isMockup = card.classList.contains('dashboard-mockup');
+      
+      card.addEventListener('mousemove', (e) => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        
+        // Spotlight shine coordinates set via custom properties
+        card.style.setProperty('--mouse-x', `${x}px`);
+        card.style.setProperty('--mouse-y', `${y}px`);
+
+        // Compute 3D tilt metrics
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+        const percentX = (x - centerX) / centerX;
+        const percentY = (y - centerY) / centerY;
+        
+        card.style.transition = 'transform 0.08s ease-out';
+        
+        if (isMockup) {
+          // Shift relative to its base rotation angle: rotateY(-10deg) rotateX(5deg)
+          const tiltX = (5 - percentY * 5).toFixed(2);
+          const tiltY = (-10 + percentX * 5).toFixed(2);
+          card.style.transform = `perspective(1000px) rotateX(${tiltX}deg) rotateY(${tiltY}deg) scale3d(1.02, 1.02, 1.02)`;
+        } else {
+          // Standard card rotation & slight lift offset
+          const tiltX = (-percentY * 6).toFixed(2);
+          const tiltY = (percentX * 6).toFixed(2);
+          card.style.transform = `perspective(1000px) rotateX(${tiltX}deg) rotateY(${tiltY}deg) translateY(-5px) scale3d(1.02, 1.02, 1.02)`;
+        }
+      });
+
+      card.addEventListener('mouseleave', () => {
+        // Reset card transition smooth interpolation
+        card.style.transition = 'transform 0.6s cubic-bezier(0.25, 1, 0.5, 1)';
+        
+        if (isMockup) {
+          card.style.transform = 'perspective(1000px) rotateY(-10deg) rotateX(5deg) scale3d(1, 1, 1)';
+        } else {
+          card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0px) scale3d(1, 1, 1)';
+        }
+      });
+      
+      card.addEventListener('mouseenter', () => {
+        card.style.transition = 'transform 0.1s ease-out';
+      });
+    });
+  </script>
+
+</body>
+</html>

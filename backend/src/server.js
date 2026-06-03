@@ -5,7 +5,7 @@ const connectDB = require('./config/db');
 
 // Import routes
 const doctorRoutes = require('./routes/doctorRoutes');
-const escalationRoutes = require('./routes/escalationRoutes');
+const leadRoutes = require('./routes/leadRoutes');
 const interactionRoutes = require('./routes/interactionRoutes');
 const analyticsRoutes = require('./routes/analyticsRoutes');
 const technicianRoutes = require('./routes/technicianRoutes');
@@ -21,7 +21,8 @@ app.use(express.json());
 
 // Routes
 app.use('/api/doctors', doctorRoutes);
-app.use('/api/escalations', escalationRoutes);
+app.use('/api/leads', leadRoutes);
+app.use('/api/escalations', leadRoutes);
 app.use('/api/interactions', interactionRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/technicians', technicianRoutes);

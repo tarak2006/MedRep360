@@ -52,7 +52,7 @@ class _DoctorsPageState extends State<DoctorsPage> {
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
         title: const Text(
-          'Doctor Analytics',
+          'Analytics',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.blueAccent,
@@ -133,7 +133,7 @@ class _DoctorsPageState extends State<DoctorsPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
-                          'Doctor Analytics',
+                          'Analytics',
                           style: TextStyle(
                             fontSize: 28,
                             fontWeight: FontWeight.w900,

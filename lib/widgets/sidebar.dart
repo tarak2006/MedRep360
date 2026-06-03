@@ -4,7 +4,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/session_state.dart';
 import '../features/dashboard/dashboard_page.dart';
 import '../features/doctors/doctors_page.dart';
-import '../features/escalations/escalations_page.dart';
+import '../features/doctors/doctor_onboarding_page.dart';
+import '../features/leads/leads_page.dart';
 import '../features/interactions/interactions_page.dart';
 
 class Sidebar extends StatelessWidget {
@@ -18,7 +19,6 @@ class Sidebar extends StatelessWidget {
 
     final isRep = role == 'Medical Representative';
     final isManager = role == 'Operations Manager';
-    final isTech = role == 'Technician';
 
     return Drawer(
       child: ListView(
@@ -70,15 +70,28 @@ class Sidebar extends StatelessWidget {
             },
           ),
 
-          // Doctor Analytics (Available for Reps and Managers)
+          // Analytics (Available for Reps and Managers)
           if (isRep || isManager)
             ListTile(
-              leading: const Icon(Icons.people_alt_rounded),
-              title: const Text('Doctor Analytics'),
+              leading: const Icon(Icons.bar_chart_rounded),
+              title: const Text('Analytics'),
               onTap: () {
                 Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(builder: (context) => const DoctorsPage()),
+                );
+              },
+            ),
+
+          // Onboarding (Available for Reps and Managers)
+          if (isRep || isManager)
+            ListTile(
+              leading: const Icon(Icons.person_add_rounded),
+              title: const Text('Onboarding'),
+              onTap: () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => const DoctorOnboardingPage()),
                 );
               },
             ),
@@ -96,14 +109,14 @@ class Sidebar extends StatelessWidget {
               },
             ),
 
-          // Escalations (Available for all roles)
+          // Leads (Available for all roles)
           ListTile(
-            leading: const Icon(Icons.priority_high_rounded),
-            title: const Text('Escalations'),
+            leading: const Icon(Icons.star_rounded),
+            title: const Text('Leads'),
             onTap: () {
               Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (context) => const EscalationsPage()),
+                MaterialPageRoute(builder: (context) => const LeadsPage()),
               );
             },
           ),

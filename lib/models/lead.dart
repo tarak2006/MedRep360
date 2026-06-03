@@ -1,4 +1,4 @@
-class Escalation {
+class Lead {
   final String id;
   final String doctorName;
   final String query;
@@ -6,7 +6,7 @@ class Escalation {
   final String? assignedTo;
   final DateTime? createdAt;
 
-  Escalation({
+  Lead({
     required this.id,
     required this.doctorName,
     required this.query,
@@ -15,8 +15,8 @@ class Escalation {
     this.createdAt,
   });
 
-  factory Escalation.fromMap(Map<String, dynamic> m) {
-    return Escalation(
+  factory Lead.fromMap(Map<String, dynamic> m) {
+    return Lead(
       id: m['_id'] ?? m['id']?.toString() ?? '',
       doctorName: m['doctor_name'] ?? '',
       query: m['query'] ?? '',

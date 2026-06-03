@@ -105,45 +105,54 @@ class _LoginPageState extends State<LoginPage> {
           if (MediaQuery.of(context).size.width > 800)
             Expanded(
               flex: 5,
-              child: Container(
-                decoration: const BoxDecoration(
-                  image: DecorationImage(
-                    image: NetworkImage('https://images.unsplash.com/photo-1576091160550-2173ff9e5ee5?q=80&w=2000&auto=format&fit=crop'),
-                    fit: BoxFit.cover,
-                  ),
-                ),
-                child: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Colors.blueAccent.withOpacity(0.8), Colors.transparent],
-                      begin: Alignment.bottomLeft,
-                      end: Alignment.topRight,
-                    )
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(48.0),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Empowering\nHealthcare\nProfessionals',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 48,
-                            fontWeight: FontWeight.w900,
-                            height: 1.2,
-                          ),
-                        ).animate().fade(duration: 800.ms).slideY(begin: 0.2),
-                        const SizedBox(height: 16),
-                        const Text(
-                          'Manage your escalations, patient interactions,\nand doctor networking seamlessly.',
-                          style: TextStyle(color: Colors.white70, fontSize: 18),
-                        ).animate().fade(duration: 800.ms, delay: 200.ms).slideY(begin: 0.2),
-                      ],
+              child: Stack(
+                children: [
+                  Positioned.fill(
+                    child: Image.network(
+                      'https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?q=80&w=2000&auto=format&fit=crop',
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          color: Colors.blueAccent.shade700,
+                        );
+                      },
                     ),
                   ),
-                ),
+                  Positioned.fill(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [Colors.blueAccent.withOpacity(0.8), Colors.transparent],
+                          begin: Alignment.bottomLeft,
+                          end: Alignment.topRight,
+                        ),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(48.0),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Empowering\nHealthcare\nProfessionals',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 48,
+                                fontWeight: FontWeight.w900,
+                                height: 1.2,
+                              ),
+                            ).animate().fade(duration: 800.ms).slideY(begin: 0.2),
+                            const SizedBox(height: 16),
+                            const Text(
+                              'Manage your escalations, patient interactions,\nand doctor networking seamlessly.',
+                              style: TextStyle(color: Colors.white70, fontSize: 18),
+                            ).animate().fade(duration: 800.ms, delay: 200.ms).slideY(begin: 0.2),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
 

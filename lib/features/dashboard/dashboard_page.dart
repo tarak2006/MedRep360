@@ -5,11 +5,11 @@ import '../../services/session_state.dart';
 import '../../widgets/dashboard_card.dart';
 import '../../widgets/sidebar.dart';
 import '../../services/api_service.dart';
-import '../../models/escalation.dart';
+import '../../models/lead.dart';
 import '../../models/interaction.dart';
 import '../../models/doctor.dart';
 import '../doctors/doctors_page.dart';
-import '../escalations/escalations_page.dart';
+import '../leads/leads_page.dart';
 import '../interactions/interactions_page.dart';
 
 class DashboardPage extends StatefulWidget {
@@ -23,7 +23,7 @@ class _DashboardPageState extends State<DashboardPage> {
   final ApiService _apiService = ApiService();
   bool _isLoading = true;
 
-  List<Escalation> _escalations = [];
+  List<Lead> _leads = [];
   List<Interaction> _interactions = [];
   List<Doctor> _doctors = [];
 
@@ -37,12 +37,12 @@ class _DashboardPageState extends State<DashboardPage> {
     setState(() => _isLoading = true);
     try {
       final futures = await Future.wait([
-        _apiService.fetchEscalations(),
+        _apiService.fetchLeads(),
         _apiService.fetchInteractions(),
         _apiService.fetchDoctors(),
       ]);
       setState(() {
-        _escalations = futures[0] as List<Escalation>;
+        _leads = futures[0] as List<Lead>;
         _interactions = futures[1] as List<Interaction>;
         _doctors = futures[2] as List<Doctor>;
         _isLoading = false;
@@ -83,7 +83,7 @@ class _DashboardPageState extends State<DashboardPage> {
         return {
           'doctor': docName,
           'action': 'Interaction: ${i.notes}',
-          'time': i.date?.toLocal().toString().substring(0, 10) ?? 'Recent',
+          'time': i.date != null ? i.date!.toLocal().toString().substring(0, 10) : 'Recent',
           'icon': Icons.chat_bubble_outline,
           'color': Colors.blue
         };
@@ -91,15 +91,15 @@ class _DashboardPageState extends State<DashboardPage> {
     }
 
     if (isManager || isTech) {
-      final relevantEscalations = isTech
-          ? _escalations.where((e) => e.assignedTo != null && e.assignedTo!.isNotEmpty)
-          : _escalations;
+      final relevantLeads = isTech
+          ? _leads.where((e) => e.assignedTo != null && e.assignedTo!.isNotEmpty)
+          : _leads;
 
-      recentActivities.addAll(relevantEscalations.map((e) {
+      recentActivities.addAll(relevantLeads.map((e) {
         return {
           'doctor': e.doctorName,
-          'action': 'Escalation: ${e.status}',
-          'time': e.createdAt?.toLocal().toString().substring(0, 10) ?? 'Recent',
+          'action': 'Lead: ${e.status}',
+          'time': e.createdAt != null ? e.createdAt!.toLocal().toString().substring(0, 10) : 'Recent',
           'icon': e.status == 'Resolved' ? Icons.check_circle_outline : Icons.warning_amber_rounded,
           'color': e.status == 'Resolved' ? Colors.green : Colors.orange
         };
@@ -237,9 +237,9 @@ class _DashboardPageState extends State<DashboardPage> {
                 }
 
                 if (isManager || isTech) {
-                  final relevantEscalations = isTech
-                      ? _escalations.where((e) => e.assignedTo != null && e.assignedTo!.isNotEmpty).toList()
-                      : _escalations;
+                  final relevantLeads = isTech
+                      ? _leads.where((e) => e.assignedTo != null && e.assignedTo!.isNotEmpty).toList()
+                      : _leads;
 
                   cards.add(
                     InkWell(
@@ -247,12 +247,12 @@ class _DashboardPageState extends State<DashboardPage> {
                       onTap: () {
                         Navigator.pushReplacement(
                           context,
-                          MaterialPageRoute(builder: (context) => const EscalationsPage()),
+                          MaterialPageRoute(builder: (context) => const LeadsPage()),
                         );
                       },
                       child: DashboardCard(
-                        title: isTech ? 'My Pending Issues' : 'Pending Escalations',
-                        value: '${relevantEscalations.where((e) => e.status != 'Resolved').length}',
+                        title: isTech ? 'My Pending Issues' : 'Pending Leads',
+                        value: '${relevantLeads.where((e) => e.status != 'Resolved').length}',
                         icon: Icons.warning_rounded,
                       ),
                     ),
@@ -263,12 +263,12 @@ class _DashboardPageState extends State<DashboardPage> {
                       onTap: () {
                         Navigator.pushReplacement(
                           context,
-                          MaterialPageRoute(builder: (context) => const EscalationsPage()),
+                          MaterialPageRoute(builder: (context) => const LeadsPage()),
                         );
                       },
                       child: DashboardCard(
-                        title: isTech ? 'My Resolved Issues' : 'Resolved Escalations',
-                        value: '${relevantEscalations.where((e) => e.status == 'Resolved').length}',
+                        title: isTech ? 'My Resolved Issues' : 'Resolved Leads',
+                        value: '${relevantLeads.where((e) => e.status == 'Resolved').length}',
                         icon: Icons.task_alt_rounded,
                       ),
                     ),

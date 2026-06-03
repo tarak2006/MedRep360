@@ -1,20 +1,22 @@
 const Doctor = require('../models/Doctor');
 const Interaction = require('../models/Interaction');
-const Escalation = require('../models/Escalation');
+const Lead = require('../models/Lead');
 
 exports.getDashboardAnalytics = async (req, res) => {
   try {
     const totalDoctors = await Doctor.countDocuments();
     const totalInteractions = await Interaction.countDocuments();
-    const totalEscalations = await Escalation.countDocuments();
+    const totalLeads = await Lead.countDocuments();
     
-    const pendingEscalations = await Escalation.countDocuments({ status: 'Pending' });
+    const pendingLeads = await Lead.countDocuments({ status: 'Pending' });
 
     res.json({
       totalDoctors,
       totalInteractions,
-      totalEscalations,
-      pendingEscalations
+      totalLeads,
+      pendingLeads,
+      totalEscalations: totalLeads,
+      pendingEscalations: pendingLeads
     });
   } catch (err) {
     res.status(500).json({ message: err.message });

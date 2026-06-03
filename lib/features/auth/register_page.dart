@@ -401,44 +401,49 @@ class _RegisterPageState extends State<RegisterPage> {
           if (MediaQuery.of(context).size.width > 800)
             Expanded(
               flex: 5,
-              child: Container(
-                decoration: const BoxDecoration(
-                  image: DecorationImage(
-                    image: NetworkImage(
+              child: Stack(
+                children: [
+                  Positioned.fill(
+                    child: Image.network(
                       'https://images.unsplash.com/photo-1551076805-e18690c5e53b?q=80&w=2000&auto=format&fit=crop',
-                    ),
-                    fit: BoxFit.cover,
-                  ),
-                ),
-                child: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        Colors.blueAccent.withOpacity(0.8),
-                        Colors.transparent,
-                      ],
-                      begin: Alignment.bottomRight,
-                      end: Alignment.topLeft,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          color: Colors.blueAccent.shade700,
+                        );
+                      },
                     ),
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(48.0),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        const Text(
-                          'Advanced\nData Analytics',
-                          textAlign: TextAlign.right,
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 48,
-                            fontWeight: FontWeight.w900,
-                            height: 1.2,
-                          ),
-                        ).animate().fade(duration: 800.ms).slideX(begin: 0.2),
-                        const SizedBox(height: 16),
-                        const Text(
+                  Positioned.fill(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            Colors.blueAccent.withOpacity(0.8),
+                            Colors.transparent,
+                          ],
+                          begin: Alignment.bottomRight,
+                          end: Alignment.topLeft,
+                        ),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(48.0),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            const Text(
+                              'Advanced\nData Analytics',
+                              textAlign: TextAlign.right,
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 48,
+                                fontWeight: FontWeight.w900,
+                                height: 1.2,
+                              ),
+                            ).animate().fade(duration: 800.ms).slideX(begin: 0.2),
+                            const SizedBox(height: 16),
+                            const Text(
                               'Gain insights into your medical\nnetwork and interactions instantly.',
                               textAlign: TextAlign.right,
                               style: TextStyle(
@@ -446,13 +451,15 @@ class _RegisterPageState extends State<RegisterPage> {
                                 fontSize: 18,
                               ),
                             )
-                            .animate()
-                            .fade(duration: 800.ms, delay: 200.ms)
-                            .slideX(begin: 0.2),
-                      ],
+                                .animate()
+                                .fade(duration: 800.ms, delay: 200.ms)
+                                .slideX(begin: 0.2),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
-                ),
+                ],
               ),
             ),
         ],

@@ -90,6 +90,7 @@ class _InteractionsPageState extends State<InteractionsPage> {
     String selectedType = 'In-person';
     final notesController = TextEditingController();
     DateTime selectedDate = DateTime.now();
+    TimeOfDay selectedTime = TimeOfDay.now();
 
     showModalBottomSheet(
       context: context,
@@ -164,6 +165,37 @@ class _InteractionsPageState extends State<InteractionsPage> {
                         ),
                       ),
                     ),
+                    const SizedBox(height: 8),
+                    Builder(
+                      builder: (context) {
+                        final selectedDoc = _doctors.firstWhere((d) => d.id == selectedDoctorId, orElse: () => _doctors.first);
+                        final String availabilityText = (selectedDoc.availableFrom.isNotEmpty && selectedDoc.availableTo.isNotEmpty)
+                            ? 'Available: ${selectedDoc.availableFrom} to ${selectedDoc.availableTo}'
+                            : 'Available: Not specified (All day)';
+                        return Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: Colors.blueAccent.withOpacity(0.05),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.blueAccent.withOpacity(0.1)),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.access_time_filled_rounded, size: 16, color: Colors.blueAccent),
+                              const SizedBox(width: 8),
+                              Text(
+                                availabilityText,
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.blueAccent,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
                     const SizedBox(height: 16),
 
                     // Type selection
@@ -198,38 +230,85 @@ class _InteractionsPageState extends State<InteractionsPage> {
                     ),
                     const SizedBox(height: 16),
 
-                    // Date Picker
-                    const Text(
-                      'Interaction Date',
-                      style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey),
+                    // Date & Time Picker Row
+                    const Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            'Interaction Date',
+                            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey),
+                          ),
+                        ),
+                        SizedBox(width: 16),
+                        Expanded(
+                          child: Text(
+                            'Interaction Time',
+                            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey),
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 8),
-                    InkWell(
-                      onTap: () async {
-                        final picked = await showDatePicker(
-                          context: context,
-                          initialDate: selectedDate,
-                          firstDate: DateTime(2025),
-                          lastDate: DateTime(2030),
-                        );
-                        if (picked != null) {
-                          setModalState(() => selectedDate = picked);
-                        }
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.grey.shade300),
-                          borderRadius: BorderRadius.circular(10),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: InkWell(
+                            onTap: () async {
+                              final picked = await showDatePicker(
+                                context: context,
+                                initialDate: selectedDate,
+                                firstDate: DateTime(2025),
+                                lastDate: DateTime(2030),
+                              );
+                              if (picked != null) {
+                                setModalState(() => selectedDate = picked);
+                              }
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                              decoration: BoxDecoration(
+                                border: Border.all(color: Colors.grey.shade300),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text('${selectedDate.year}-${selectedDate.month.toString().padLeft(2, '0')}-${selectedDate.day.toString().padLeft(2, '0')}'),
+                                  const Icon(Icons.calendar_today_rounded, color: Colors.blueAccent, size: 18),
+                                ],
+                              ),
+                            ),
+                          ),
                         ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(selectedDate.toString().substring(0, 10)),
-                            const Icon(Icons.calendar_today_rounded, color: Colors.blueAccent),
-                          ],
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: InkWell(
+                            onTap: () async {
+                              final picked = await showTimePicker(
+                                context: context,
+                                initialTime: selectedTime,
+                              );
+                              if (picked != null) {
+                                setModalState(() => selectedTime = picked);
+                              }
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                              decoration: BoxDecoration(
+                                border: Border.all(color: Colors.grey.shade300),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(selectedTime.format(context)),
+                                  const Icon(Icons.access_time_rounded, color: Colors.blueAccent, size: 18),
+                                ],
+                              ),
+                            ),
+                          ),
                         ),
-                      ),
+                      ],
                     ),
                     const SizedBox(height: 16),
 
@@ -271,14 +350,53 @@ class _InteractionsPageState extends State<InteractionsPage> {
                             return;
                           }
 
+                          final selectedDoc = _doctors.firstWhere((d) => d.id == selectedDoctorId, orElse: () => _doctors.first);
+                          if (selectedDoc.availableFrom.isNotEmpty && selectedDoc.availableTo.isNotEmpty) {
+                            final startTime = _parseTimeString(selectedDoc.availableFrom);
+                            final endTime = _parseTimeString(selectedDoc.availableTo);
+                            if (startTime != null && endTime != null) {
+                              if (!_isTimeBetween(selectedTime, startTime, endTime)) {
+                                showDialog(
+                                  context: context,
+                                  builder: (context) => AlertDialog(
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                    title: const Row(
+                                      children: [
+                                        Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 28),
+                                        SizedBox(width: 8),
+                                        Text('Doctor Unavailable'),
+                                      ],
+                                    ),
+                                    content: Text('${selectedDoc.name} is only available from ${selectedDoc.availableFrom} until ${selectedDoc.availableTo}.\n\nSelected time: ${selectedTime.format(context)} is outside of their working hours. Please change the time.'),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () => Navigator.pop(context),
+                                        child: const Text('OK', style: TextStyle(fontWeight: FontWeight.bold)),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                                return;
+                              }
+                            }
+                          }
+
                           Navigator.pop(context);
                           setState(() => _isLoading = true);
+
+                          final combinedDateTime = DateTime(
+                            selectedDate.year,
+                            selectedDate.month,
+                            selectedDate.day,
+                            selectedTime.hour,
+                            selectedTime.minute,
+                          );
 
                           final newInteractionMap = {
                             'doctor': selectedDoctorId,
                             'type': selectedType,
                             'notes': notesController.text.trim(),
-                            'date': selectedDate.toIso8601String(),
+                            'date': combinedDateTime.toIso8601String(),
                           };
 
                           final result = await _apiService.createInteraction(newInteractionMap);
@@ -295,7 +413,7 @@ class _InteractionsPageState extends State<InteractionsPage> {
                               doctorName: tempDocName,
                               notes: notesController.text.trim(),
                               type: selectedType,
-                              date: selectedDate,
+                              date: combinedDateTime,
                             );
                             setState(() {
                               _interactions.insert(0, localMock);
@@ -530,7 +648,7 @@ class _InteractionsPageState extends State<InteractionsPage> {
                                           ],
                                         ),
                                         Text(
-                                          i.date?.toLocal().toString().substring(0, 10) ?? 'Recent',
+                                          i.date != null ? i.date!.toLocal().toString().substring(0, 10) : 'Recent',
                                           style: const TextStyle(
                                             color: Colors.grey,
                                             fontWeight: FontWeight.w500,
@@ -568,5 +686,46 @@ class _InteractionsPageState extends State<InteractionsPage> {
         ),
       ),
     );
+  }
+
+  TimeOfDay? _parseTimeString(String timeStr) {
+    timeStr = timeStr.trim().toUpperCase();
+    if (timeStr.isEmpty) return null;
+    try {
+      final is12Hour = timeStr.contains('AM') || timeStr.contains('PM');
+      if (is12Hour) {
+        final isPM = timeStr.contains('PM');
+        final cleanStr = timeStr.replaceAll('AM', '').replaceAll('PM', '').trim();
+        final parts = cleanStr.split(':');
+        if (parts.length != 2) return null;
+        int hour = int.parse(parts[0]);
+        int minute = int.parse(parts[1]);
+        if (isPM) {
+          if (hour < 12) hour += 12;
+        } else {
+          if (hour == 12) hour = 0;
+        }
+        return TimeOfDay(hour: hour, minute: minute);
+      } else {
+        final parts = timeStr.split(':');
+        if (parts.length != 2) return null;
+        int hour = int.parse(parts[0]);
+        int minute = int.parse(parts[1]);
+        return TimeOfDay(hour: hour, minute: minute);
+      }
+    } catch (_) {
+      return null;
+    }
+  }
+
+  bool _isTimeBetween(TimeOfDay selected, TimeOfDay start, TimeOfDay end) {
+    final selMin = selected.hour * 60 + selected.minute;
+    final startMin = start.hour * 60 + start.minute;
+    final endMin = end.hour * 60 + end.minute;
+    if (startMin <= endMin) {
+      return selMin >= startMin && selMin <= endMin;
+    } else {
+      return selMin >= startMin || selMin <= endMin;
+    }
   }
 }

@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const escalationSchema = new mongoose.Schema({
+const leadSchema = new mongoose.Schema({
   doctor_name: {
     type: String,
     required: true,
@@ -19,4 +19,4 @@ const escalationSchema = new mongoose.Schema({
   }
 }, { timestamps: true });
 
-module.exports = mongoose.model('Escalation', escalationSchema);
+module.exports = mongoose.model('Lead', leadSchema);
