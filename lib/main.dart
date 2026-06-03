@@ -3,7 +3,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'features/auth/login_page.dart';
 import 'features/dashboard/dashboard_page.dart';
 import 'features/interactions/interactions_page.dart';
-
 import 'services/storage_check.dart';
 
 class InMemoryLocalStorage extends LocalStorage {
