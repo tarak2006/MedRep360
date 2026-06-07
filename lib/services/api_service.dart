@@ -41,23 +41,7 @@ class ApiService {
   }
 
   List<Lead> _getDummyLeads() {
-    return [
-      Lead(
-        id: '1',
-        doctorName: 'Dr. Alice Smith',
-        query: 'Requested samples of Paracetamol 500mg but only received 250mg.',
-        status: 'Pending',
-        createdAt: DateTime.now().subtract(const Duration(days: 2)),
-      ),
-      Lead(
-        id: '2',
-        doctorName: 'Dr. Bob Jones',
-        query: 'The login credentials for the portal are not working.',
-        status: 'In Progress',
-        assignedTo: 'Tech Alex',
-        createdAt: DateTime.now().subtract(const Duration(days: 1)),
-      ),
-    ];
+    return [];
   }
 
   Future<void> updateLeadStatus(String id, String status) async {
@@ -107,48 +91,7 @@ class ApiService {
   }
 
   List<Interaction> _getDummyInteractions() {
-    return [
-      Interaction(
-        id: 'i1',
-        doctorId: '6a156edec3f0acdfae0bb3de',
-        doctorName: 'Dr. Arun Kumar',
-        notes: 'Discussed clinical trial results for Cardivol 10mg. Doctor requested sample packs and brochures.',
-        type: 'In-person',
-        date: DateTime.now().subtract(const Duration(days: 1)),
-      ),
-      Interaction(
-        id: 'i2',
-        doctorId: '6a156edec3f0acdfae0bb3df',
-        doctorName: 'Dr. Sneha Reddy',
-        notes: 'Followed up via phone call to discuss neurology department drug requirements for the next month.',
-        type: 'Phone',
-        date: DateTime.now(),
-      ),
-      Interaction(
-        id: 'i3',
-        doctorId: '6a156edec3f0acdfae0bb3e0',
-        doctorName: 'Dr. Vikram Singh',
-        notes: 'Conducted a virtual meeting presenting the orthopedic drug efficacy literature.',
-        type: 'Virtual',
-        date: DateTime.now().subtract(const Duration(days: 2)),
-      ),
-      Interaction(
-        id: 'i4',
-        doctorId: '6a156edec3f0acdfae0bb3e1',
-        doctorName: 'Dr. Priya Sharma',
-        notes: 'Sent pediatric drug dosage guide and clinical trial reports via email as requested.',
-        type: 'Email',
-        date: DateTime.now(),
-      ),
-      Interaction(
-        id: 'i5',
-        doctorId: '6a156edec3f0acdfae0bb3e2',
-        doctorName: 'Dr. Rohan Mehta',
-        notes: 'Met in-person to discuss correct brochure details for the Dermavit cream sample distribution.',
-        type: 'In-person',
-        date: DateTime.now().subtract(const Duration(days: 1)),
-      ),
-    ];
+    return [];
   }
 
   Future<List<Doctor>> fetchDoctors() async {
@@ -167,59 +110,48 @@ class ApiService {
   List<Doctor> _getDummyDoctors() {
     return [
       Doctor(
-        id: '6a156edec3f0acdfae0bb3de',
-        name: 'Dr. Arun Kumar',
-        specialty: 'Cardiology',
-        region: 'Hyderabad',
-        mobile: '+919876543210',
-        email: 'arun.kumar@health.com',
-        status: 'Created',
-        availableFrom: '09:00 AM',
-        availableTo: '01:00 PM',
+        id: '6a224fb319a418a64262ba60',
+        name: 'Dr Chandramouli S',
+        specialty: 'General Physician',
+        region: 'Visakhapatnam',
+        mobile: '8897208298',
+        email: 'samathamcm@gmail.com',
+        status: 'Saved',
+        availableFrom: '9:00 AM',
+        availableTo: '5:00 PM',
       ),
       Doctor(
-        id: '6a156edec3f0acdfae0bb3df',
-        name: 'Dr. Sneha Reddy',
-        specialty: 'Neurology',
-        region: 'Bangalore',
-        mobile: '+919876543211',
-        email: 'sneha.reddy@hospital.com',
-        status: 'Created',
-        availableFrom: '10:00 AM',
-        availableTo: '04:00 PM',
+        id: '6a2317f2582fb8e94a173ad6',
+        name: 'Harshith',
+        specialty: 'General Practice',
+        region: 'Not Specified',
+        mobile: '+353894938404',
+        email: '',
+        status: 'AI Agent Launched',
+        availableFrom: '',
+        availableTo: '',
       ),
       Doctor(
-        id: '6a156edec3f0acdfae0bb3e0',
-        name: 'Dr. Vikram Singh',
-        specialty: 'Orthopedics',
-        region: 'Chennai',
-        mobile: '+919876543212',
-        email: 'vikram.singh@clinic.com',
-        status: 'Created',
-        availableFrom: '02:00 PM',
-        availableTo: '06:00 PM',
+        id: '6a239b7699d2884d26be5438',
+        name: 'Tota Deepa Swamy',
+        specialty: 'General Practice',
+        region: 'Not Specified',
+        mobile: '9160011180',
+        email: '',
+        status: 'AI Agent Launched',
+        availableFrom: '',
+        availableTo: '',
       ),
       Doctor(
-        id: '6a156edec3f0acdfae0bb3e1',
-        name: 'Dr. Priya Sharma',
-        specialty: 'Pediatrics',
-        region: 'Mumbai',
-        mobile: '+919876543213',
-        email: 'priya.sharma@medcare.com',
-        status: 'Created',
-        availableFrom: '09:00 AM',
-        availableTo: '05:00 PM',
-      ),
-      Doctor(
-        id: '6a156edec3f0acdfae0bb3e2',
-        name: 'Dr. Rohan Mehta',
-        specialty: 'Dermatology',
-        region: 'Pune',
-        mobile: '+919876543214',
-        email: 'rohan.mehta@skinclinic.com',
-        status: 'Created',
-        availableFrom: '11:00 AM',
-        availableTo: '03:00 PM',
+        id: '6a239c3b99d2884d26be5439',
+        name: 'Dr Roopa',
+        specialty: 'General Practice',
+        region: 'Not Specified',
+        mobile: '+919160011180',
+        email: '',
+        status: 'AI Agent Launched',
+        availableFrom: '',
+        availableTo: '',
       ),
     ];
   }
@@ -263,6 +195,31 @@ class ApiService {
       return null;
     } catch (e) {
       return null;
+    }
+  }
+
+  Future<Doctor?> updateDoctor(String id, Map<String, dynamic> doctorData) async {
+    try {
+      final res = await http.put(
+        Uri.parse('$baseUrl/doctors/$id'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode(doctorData),
+      );
+      if (res.statusCode == 200) {
+        return Doctor.fromMap(json.decode(res.body));
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  Future<bool> deleteDoctor(String id) async {
+    try {
+      final res = await http.delete(Uri.parse('$baseUrl/doctors/$id'));
+      return res.statusCode == 200;
+    } catch (e) {
+      return false;
     }
   }
 

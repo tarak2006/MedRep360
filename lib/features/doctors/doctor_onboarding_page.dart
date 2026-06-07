@@ -248,6 +248,256 @@ class _DoctorOnboardingPageState extends State<DoctorOnboardingPage> {
     await _submitOnboarding("Call Scheduled", scheduledTime: scheduledDateTime);
   }
 
+  Future<void> _deleteDoctorConfirm(Doctor doc) async {
+    final bool? confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Delete Doctor'),
+          content: Text('Are you sure you want to delete ${doc.name}?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.redAccent,
+                foregroundColor: Colors.white,
+              ),
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Delete'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirm == true) {
+      setState(() => _isSubmitting = true);
+      final success = await _apiService.deleteDoctor(doc.id);
+      setState(() => _isSubmitting = false);
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Deleted doctor: ${doc.name}'),
+            backgroundColor: Colors.red.shade700,
+          ),
+        );
+        _fetchDoctors();
+      } else {
+        // Offline fallback deletion
+        setState(() {
+          _doctors.removeWhere((d) => d.id == doc.id);
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Deleted doctor (Demo Mode): ${doc.name}'),
+            backgroundColor: Colors.red.shade700,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _editDoctorDialog(Doctor doc) async {
+    final formKey = GlobalKey<FormState>();
+    final nameCtrl = TextEditingController(text: doc.name);
+    final mobileCtrl = TextEditingController(text: doc.mobile);
+    final specialtyCtrl = TextEditingController(text: doc.specialty);
+    final emailCtrl = TextEditingController(text: doc.email);
+    final locationCtrl = TextEditingController(text: doc.region);
+    final addressCtrl = TextEditingController(text: doc.address);
+    String availableFrom = doc.availableFrom;
+    String availableTo = doc.availableTo;
+    String currentStatus = doc.status;
+
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: const Text('Edit Doctor Details'),
+              content: SizedBox(
+                width: 500,
+                child: SingleChildScrollView(
+                  child: Form(
+                    key: formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        TextFormField(
+                          controller: nameCtrl,
+                          decoration: const InputDecoration(labelText: 'Name *'),
+                          validator: (val) => val == null || val.trim().isEmpty ? 'Enter name' : null,
+                        ),
+                        const SizedBox(height: 12),
+                        TextFormField(
+                          controller: mobileCtrl,
+                          decoration: const InputDecoration(labelText: 'Mobile *'),
+                          validator: (val) => val == null || val.trim().isEmpty ? 'Enter mobile' : null,
+                        ),
+                        const SizedBox(height: 12),
+                        TextFormField(
+                          controller: specialtyCtrl,
+                          decoration: const InputDecoration(labelText: 'Specialty'),
+                        ),
+                        const SizedBox(height: 12),
+                        TextFormField(
+                          controller: emailCtrl,
+                          decoration: const InputDecoration(labelText: 'Email'),
+                        ),
+                        const SizedBox(height: 12),
+                        TextFormField(
+                          controller: locationCtrl,
+                          decoration: const InputDecoration(labelText: 'Location'),
+                        ),
+                        const SizedBox(height: 12),
+                        TextFormField(
+                          controller: addressCtrl,
+                          decoration: const InputDecoration(labelText: 'Address'),
+                        ),
+                        const SizedBox(height: 12),
+                        // Dropdown for Status
+                        DropdownButtonFormField<String>(
+                          value: currentStatus,
+                          decoration: const InputDecoration(labelText: 'Status'),
+                          items: () {
+                            final list = ["Saved", "Call Scheduled", "AI Agent Launched", "Contact Now", "Already Contacted"];
+                            if (!list.contains(currentStatus)) {
+                              list.add(currentStatus);
+                            }
+                            return list.map((status) {
+                              return DropdownMenuItem<String>(
+                                value: status,
+                                child: Text(status),
+                              );
+                            }).toList();
+                          }(),
+                          onChanged: (val) {
+                            if (val != null) {
+                              setDialogState(() => currentStatus = val);
+                            }
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton(
+                                onPressed: () async {
+                                  final TimeOfDay? picked = await showTimePicker(
+                                    context: context,
+                                    initialTime: TimeOfDay.now(),
+                                  );
+                                  if (picked != null) {
+                                    setDialogState(() {
+                                      availableFrom = picked.format(context);
+                                    });
+                                  }
+                                },
+                                child: Text(availableFrom.isNotEmpty ? 'From: $availableFrom' : 'Available From'),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: OutlinedButton(
+                                onPressed: () async {
+                                  final TimeOfDay? picked = await showTimePicker(
+                                    context: context,
+                                    initialTime: TimeOfDay.now(),
+                                  );
+                                  if (picked != null) {
+                                    setDialogState(() {
+                                      availableTo = picked.format(context);
+                                    });
+                                  }
+                                },
+                                child: Text(availableTo.isNotEmpty ? 'To: $availableTo' : 'Available To'),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Cancel'),
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    if (!formKey.currentState!.validate()) return;
+                    
+                    final updatedPayload = {
+                      "name": nameCtrl.text.trim(),
+                      "mobile": mobileCtrl.text.trim(),
+                      "specialty": specialtyCtrl.text.trim(),
+                      "email": emailCtrl.text.trim(),
+                      "region": locationCtrl.text.trim(),
+                      "address": addressCtrl.text.trim(),
+                      "status": currentStatus,
+                      "availableFrom": availableFrom,
+                      "availableTo": availableTo,
+                    };
+
+                    Navigator.pop(context);
+                    setState(() => _isSubmitting = true);
+                    final updatedDoc = await _apiService.updateDoctor(doc.id, updatedPayload);
+                    setState(() => _isSubmitting = false);
+
+                    if (updatedDoc != null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Updated details for: ${updatedDoc.name}'),
+                          backgroundColor: Colors.green.shade700,
+                        ),
+                      );
+                      _fetchDoctors();
+                    } else {
+                      // Offline/Demo fallback update
+                      final index = _doctors.indexWhere((d) => d.id == doc.id);
+                      if (index != -1) {
+                        setState(() {
+                          _doctors[index] = Doctor(
+                            id: doc.id,
+                            name: updatedPayload['name'] as String,
+                            mobile: updatedPayload['mobile'] as String,
+                            specialty: updatedPayload['specialty'] as String,
+                            email: updatedPayload['email'] as String,
+                            region: updatedPayload['region'] as String,
+                            address: updatedPayload['address'] as String,
+                            status: currentStatus,
+                            availableFrom: availableFrom,
+                            availableTo: availableTo,
+                            scheduledTime: doc.scheduledTime,
+                            customFields: doc.customFields,
+                          );
+                        });
+                      }
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Updated (Demo Mode): ${nameCtrl.text.trim()}'),
+                          backgroundColor: Colors.blue.shade700,
+                        ),
+                      );
+                    }
+                  },
+                  child: const Text('Save'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
   Widget _buildStatusBadge(String status, DateTime? scheduledTime) {
     Color bg;
     Color text;
@@ -259,15 +509,28 @@ class _DoctorOnboardingPageState extends State<DoctorOnboardingPage> {
         text = Colors.green.shade800;
         icon = Icons.rocket_launch_rounded;
         break;
+      case 'Contact Now':
+        bg = Colors.blue.shade50;
+        text = Colors.blue.shade800;
+        icon = Icons.phone_android_rounded;
+        break;
+      case 'Contacted Now':
+      case 'Already Contacted':
+        bg = Colors.teal.shade50;
+        text = Colors.teal.shade800;
+        icon = Icons.check_circle_rounded;
+        break;
       case 'Call Scheduled':
         bg = Colors.amber.shade50;
         text = Colors.orange.shade800;
         icon = Icons.calendar_month_rounded;
         break;
+      case 'Saved':
+      case 'Created':
       default:
         bg = Colors.grey.shade100;
         text = Colors.grey.shade800;
-        icon = Icons.create_new_folder_rounded;
+        icon = Icons.save_rounded;
     }
 
     String label = status;
@@ -494,9 +757,9 @@ class _DoctorOnboardingPageState extends State<DoctorOnboardingPage> {
                       else
                         LayoutBuilder(
                           builder: (context, constraints) {
-                            bool isWide = constraints.maxWidth > 600;
+                            bool isWide = constraints.maxWidth > 800;
                             final buttonList = [
-                              // Button 1: Create
+                              // Button 1: Saved
                               Expanded(
                                 flex: isWide ? 1 : 0,
                                 child: SizedBox(
@@ -509,17 +772,17 @@ class _DoctorOnboardingPageState extends State<DoctorOnboardingPage> {
                                         borderRadius: BorderRadius.circular(10),
                                       ),
                                     ),
-                                    onPressed: () => _submitOnboarding("Created"),
-                                    icon: const Icon(Icons.create_rounded),
+                                    onPressed: () => _submitOnboarding("Saved"),
+                                    icon: const Icon(Icons.save_rounded),
                                     label: const Text(
-                                      'Create Only',
+                                      'Saved',
                                       style: TextStyle(fontWeight: FontWeight.bold),
                                     ),
                                   ),
                                 ),
                               ),
                               const SizedBox(width: 12, height: 12),
-                              // Button 2: Schedule
+                              // Button 2: Schedule Now
                               Expanded(
                                 flex: isWide ? 1 : 0,
                                 child: SizedBox(
@@ -535,14 +798,37 @@ class _DoctorOnboardingPageState extends State<DoctorOnboardingPage> {
                                     onPressed: _scheduleCallDialog,
                                     icon: const Icon(Icons.calendar_month_rounded),
                                     label: const Text(
-                                      'Schedule Call',
+                                      'Schedule Now',
                                       style: TextStyle(fontWeight: FontWeight.bold),
                                     ),
                                   ),
                                 ),
                               ),
                               const SizedBox(width: 12, height: 12),
-                              // Button 3: Launch
+                              // Button 3: Contact Now
+                              Expanded(
+                                flex: isWide ? 1 : 0,
+                                child: SizedBox(
+                                  height: 50,
+                                  child: ElevatedButton.icon(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.blue.shade700,
+                                      foregroundColor: Colors.white,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                    ),
+                                    onPressed: () => _submitOnboarding("Contact Now"),
+                                    icon: const Icon(Icons.phone_android_rounded),
+                                    label: const Text(
+                                      'Contact Now',
+                                      style: TextStyle(fontWeight: FontWeight.bold),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 12, height: 12),
+                              // Button 4: Already Contacted
                               Expanded(
                                 flex: isWide ? 1 : 0,
                                 child: SizedBox(
@@ -555,10 +841,10 @@ class _DoctorOnboardingPageState extends State<DoctorOnboardingPage> {
                                         borderRadius: BorderRadius.circular(10),
                                       ),
                                     ),
-                                    onPressed: () => _submitOnboarding("AI Agent Launched"),
-                                    icon: const Icon(Icons.rocket_launch_rounded),
+                                    onPressed: () => _submitOnboarding("Already Contacted"),
+                                    icon: const Icon(Icons.check_circle_rounded),
                                     label: const Text(
-                                      'Launch Agent',
+                                      'Already Contacted',
                                       style: TextStyle(fontWeight: FontWeight.bold),
                                     ),
                                   ),
@@ -605,7 +891,7 @@ class _DoctorOnboardingPageState extends State<DoctorOnboardingPage> {
                   child: DropdownButtonHideUnderline(
                     child: DropdownButton<String>(
                       value: _statusFilter,
-                      items: ["All", "Created", "Call Scheduled", "AI Agent Launched"].map((String status) {
+                      items: ["All", "Saved", "Call Scheduled", "AI Agent Launched", "Contact Now", "Already Contacted"].map((String status) {
                         return DropdownMenuItem<String>(
                           value: status,
                           child: Text(status),
@@ -718,7 +1004,23 @@ class _DoctorOnboardingPageState extends State<DoctorOnboardingPage> {
                                     ],
                                   ],
                                 ),
-                                trailing: _buildStatusBadge(doc.status, doc.scheduledTime),
+                                trailing: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    _buildStatusBadge(doc.status, doc.scheduledTime),
+                                    const SizedBox(width: 8),
+                                    IconButton(
+                                      icon: const Icon(Icons.edit_rounded, color: Colors.blueAccent),
+                                      onPressed: () => _editDoctorDialog(doc),
+                                      tooltip: 'Edit Doctor',
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(Icons.delete_rounded, color: Colors.redAccent),
+                                      onPressed: () => _deleteDoctorConfirm(doc),
+                                      tooltip: 'Delete Doctor',
+                                    ),
+                                  ],
+                                ),
                               );
                             },
                           ),

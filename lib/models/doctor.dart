@@ -20,7 +20,7 @@ class Doctor {
     this.email = '',
     this.region = '',
     this.address = '',
-    this.status = 'Created',
+    this.status = 'Saved',
     this.scheduledTime,
     this.availableFrom = '',
     this.availableTo = '',
@@ -35,7 +35,7 @@ class Doctor {
         email: m['email'] ?? m['emailId'] ?? '',
         region: m['region'] ?? m['location'] ?? '',
         address: m['address'] ?? '',
-        status: m['status'] ?? 'Created',
+        status: m['status'] ?? 'Saved',
         scheduledTime: m['scheduledTime'] != null
             ? DateTime.tryParse(m['scheduledTime'])
             : (m['scheduled_time'] != null ? DateTime.tryParse(m['scheduled_time']) : null),

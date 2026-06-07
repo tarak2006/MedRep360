@@ -32,7 +32,7 @@ const doctorSchema = new mongoose.Schema({
   status: {
     type: String,
     required: false,
-    default: 'Created',
+    default: 'Saved',
   },
   scheduledTime: {
     type: Date,
