@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="MedRep 360 - Transforming Pharma Engagement with Autonomous AI.">
   <title>MedRep 360 | Autonomous AI Medical Representative</title>
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=3.2">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Plus+Jakarta+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
@@ -37,7 +37,6 @@
     <div class="hero-bg">
       <div class="gradient-sphere sphere-1"></div>
       <div class="gradient-sphere sphere-2"></div>
-      <canvas id="scanner-bg"></canvas>
     </div>
     <div class="hero-container">
       <div class="hero-content">
@@ -71,24 +70,43 @@
           <a href="#contact" class="btn secondary-btn">Become a Pilot Partner</a>
         </div>
       </div>
+      <!-- Live Interactive AI Detailing Chat Simulator -->
       <div class="hero-visual">
-        <div class="dashboard-mockup">
-          <div class="mockup-header">
-            <div class="mockup-dots"><span></span><span></span><span></span></div>
-            <div class="mockup-address">medrep360.cc/portal</div>
-          </div>
-          <div class="mockup-body">
-            <div class="mockup-sidebar">
-              <div class="mockup-item active"></div>
-              <div class="mockup-item"></div>
-              <div class="mockup-item"></div>
-            </div>
-            <div class="mockup-content">
-              <div class="mockup-card card-large"></div>
-              <div class="mockup-grid">
-                <div class="mockup-card"></div>
-                <div class="mockup-card"></div>
+        <div class="simulator-window">
+          <div class="sim-header">
+            <div class="sim-header-top">
+              <div class="sim-dots"><span></span><span></span><span></span></div>
+              <div class="sim-status">
+                <span class="sim-status-dot"></span>
+                <span>AI Detailing Active</span>
               </div>
+            </div>
+            <div class="sim-address">medrep360.cc/detailing</div>
+            <div class="sim-tabs" id="sim-tabs">
+              <button class="sim-tab-btn active" data-specialty="cardio">CardioVance (Cardio)</button>
+              <button class="sim-tab-btn" data-specialty="pediatric">PediaGuard (Pediatric)</button>
+              <button class="sim-tab-btn" data-specialty="gp">GlucoNorm (Diabetes)</button>
+            </div>
+          </div>
+          <div class="sim-body" id="sim-chat-body">
+            <!-- Dynamic chat logs render here -->
+          </div>
+          
+          <!-- Monospace Telemetry Pane -->
+          <div class="sim-telemetry">
+            <div class="sim-telemetry-header">
+              <span>AGENT TELEMETRY</span>
+              <span class="sim-telemetry-status-dot"></span>
+            </div>
+            <div class="sim-telemetry-logs" id="sim-telemetry-logs">
+              <!-- Logs render here -->
+            </div>
+          </div>
+
+          <div class="sim-footer">
+            <div class="sim-chips-title">Select doctor question to detail:</div>
+            <div class="sim-chips-container" id="sim-chips-container">
+              <!-- Preset questions render here -->
             </div>
           </div>
         </div>
@@ -462,158 +480,11 @@
       el.addEventListener('mouseenter', () => s.scramble());
     });
 
-    // Canvas Grid & Interactive Vector Field Animation (Google Antigravity style)
-    const canvas = document.getElementById('scanner-bg');
-    if (canvas) {
-      const ctx = canvas.getContext('2d');
-      let w = 0;
-      let h = 0;
-      let vectors = [];
-      const spacing = 38; // Spacing between vector nodes for a clean, dense layout
-
-      function resizeCanvas() {
-        const dpr = window.devicePixelRatio || 1;
-        const rect = canvas.getBoundingClientRect();
-        canvas.width = rect.width * dpr;
-        canvas.height = rect.height * dpr;
-        ctx.scale(dpr, dpr);
-        w = rect.width;
-        h = rect.height;
-        initVectors();
-      }
-
-      function initVectors() {
-        vectors = [];
-        for (let x = spacing / 2; x < w; x += spacing) {
-          for (let y = spacing / 2; y < h; y += spacing) {
-            // High-end Google Antigravity Spatial Colors
-            let color = { r: 129, g: 140, b: 248 }; // Default Indigo
-            const ratioX = x / w;
-            
-            if (ratioX < 0.35) {
-              // Left: Magenta/Pink
-              color = { r: 236, g: 72, b: 153 };
-            } else if (ratioX < 0.65) {
-              // Middle: Indigo/Purple
-              color = { r: 129, g: 140, b: 248 };
-            } else {
-              // Right: Sky Blue/Cyan
-              color = { r: 56, g: 189, b: 248 };
-            }
-
-            vectors.push({
-              x: x,
-              y: y,
-              angle: Math.random() * Math.PI * 2, // start randomized
-              color: color,
-              maxLength: 11
-            });
-          }
-        }
-      }
-
-      resizeCanvas();
-      window.addEventListener('resize', resizeCanvas);
-
-      // Global Mouse Proximity Coordinates
-      let mouse = { x: -1000, y: -1000, active: false };
-      window.addEventListener('mousemove', (e) => {
-        const rect = canvas.getBoundingClientRect();
-        mouse.x = e.clientX - rect.left;
-        mouse.y = e.clientY - rect.top;
-        mouse.active = true;
-      });
-
-      window.addEventListener('mouseleave', () => {
-        mouse.active = false;
-        mouse.x = -1000;
-        mouse.y = -1000;
-      });
-
-      function animate() {
-        ctx.clearRect(0, 0, w, h);
-
-        const time = Date.now() * 0.0012;
-        
-        // Define target coordinates: either cursor or circular ambient path
-        let targetX = mouse.x;
-        let targetY = mouse.y;
-
-        if (!mouse.active) {
-          // Circular virtual target to keep ambient flow alive when mouse is not active
-          targetX = w / 2 + Math.cos(time * 0.6) * (w / 3.5);
-          targetY = h / 2 + Math.sin(time * 0.4) * (h / 3);
-        }
-
-        // Draw ambient background radial spotlight tracking the target
-        const spotAlpha = mouse.active ? 0.09 : 0.035;
-        const radialGlow = ctx.createRadialGradient(targetX, targetY, 0, targetX, targetY, 280);
-        radialGlow.addColorStop(0, `rgba(56, 189, 248, ${spotAlpha})`);
-        radialGlow.addColorStop(1, 'rgba(56, 189, 248, 0)');
-        ctx.fillStyle = radialGlow;
-        ctx.fillRect(0, 0, w, h);
-
-        // Update and draw vector dashes
-        vectors.forEach(v => {
-          const dx = targetX - v.x;
-          const dy = targetY - v.y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-
-          // Rotate dynamically to target angle pointing to cursor/target
-          const targetAngle = Math.atan2(dy, dx);
-          
-          // Smooth rotation Lerp (handling wrap-around angles cleanly)
-          let angleDiff = targetAngle - v.angle;
-          while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
-          while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
-          v.angle += angleDiff * 0.08; // Lerp velocity
-
-          // Proximity brightness/length multiplier decay
-          const maxDistance = 380;
-          let intensity = 0;
-
-          if (mouse.active) {
-            intensity = Math.max(0, 1 - dist / maxDistance);
-            // Apply easing curves for punchy focus near cursor
-            intensity = Math.pow(intensity, 1.4);
-          } else {
-            // Ambient intensity is smaller and more uniform
-            intensity = Math.max(0, 0.45 - dist / (maxDistance * 1.6));
-            intensity = Math.pow(intensity, 1.2) * 0.7;
-          }
-
-          // Length of dashes: larger when closer to target
-          const dashLen = 2.0 + intensity * v.maxLength;
-          
-          // Dynamic alpha: active highlight or ambient baseline visibility
-          const opacity = Math.max(0.045, intensity * 0.75);
-
-          // Draw baseline tiny pivot point dot
-          ctx.fillStyle = `rgba(255, 255, 255, ${Math.max(0.04, intensity * 0.12)})`;
-          ctx.fillRect(v.x - 0.7, v.y - 0.7, 1.4, 1.4);
-
-          // Draw the vector dash starting at node position and extending in angle direction
-          const endX = v.x + Math.cos(v.angle) * dashLen;
-          const endY = v.y + Math.sin(v.angle) * dashLen;
-
-          ctx.strokeStyle = `rgba(${v.color.r}, ${v.color.g}, ${v.color.b}, ${opacity})`;
-          ctx.lineWidth = 1.6;
-          ctx.lineCap = 'round';
-          ctx.beginPath();
-          ctx.moveTo(v.x, v.y);
-          ctx.lineTo(endX, endY);
-          ctx.stroke();
-        });
-
-        requestAnimationFrame(animate);
-      }
-      animate();
-    }
 
     // Card 3D Tilt & Mouse Highlight reflection integration
-    const cards = document.querySelectorAll('.feature-card, .pillar-card, .channel-card, .why-card, .dashboard-mockup');
+    const cards = document.querySelectorAll('.feature-card, .pillar-card, .channel-card, .why-card, .simulator-window');
     cards.forEach(card => {
-      const isMockup = card.classList.contains('dashboard-mockup');
+      const isMockup = card.classList.contains('simulator-window');
       
       card.addEventListener('mousemove', (e) => {
         const rect = card.getBoundingClientRect();
@@ -659,6 +530,225 @@
       card.addEventListener('mouseenter', () => {
         card.style.transition = 'transform 0.1s ease-out';
       });
+    });
+
+    // Detailing Simulator Logic
+    const simTabs = document.querySelectorAll('.sim-tab-btn');
+    const simChatBody = document.getElementById('sim-chat-body');
+    const simLogs = document.getElementById('sim-telemetry-logs');
+    const simChipsContainer = document.getElementById('sim-chips-container');
+
+    const simData = {
+      cardio: {
+        physician: "Dr. Priya Sharma",
+        greeting: "Hello Dr. Priya Sharma, I'm MedRep 360, here to detail CardioVance, our once-daily beta blocker for hypertension and heart failure. How can I help?",
+        logs: [
+          "Target clinical product: CardioVance (Cardio)",
+          "Agent ready. Awaiting physician query."
+        ],
+        questions: [
+          {
+            q: "What is the recommended dosage for chronic heart failure?",
+            a: "CardioVance (Metoprolol Succinate) should be initiated at 25 mg once daily for NYHA Class II heart failure. For more severe failure, start at 12.5 mg once daily. Dose can be doubled every 2 weeks up to a max of 200 mg/day as tolerated.",
+            logs: [
+              "Query received: metoprolol succinate dosage CHF",
+              "Executing Clinical RAG lookup...",
+              "FDA approved labels checked: 12.5mg - 200mg range.",
+              "Synthesizing compliant detailing blocks.",
+              "Autonomous detailing response complete. Updating CRM dashboard."
+            ]
+          },
+          {
+            q: "Are there any notable contraindications?",
+            a: "Yes, CardioVance is contraindicated in patients with severe bradycardia (<45 bpm), second or third-degree heart block, cardiogenic shock, and decompensated cardiac failure.",
+            logs: [
+              "Query received: metoprolol succinate contraindications",
+              "Executing Clinical RAG lookup...",
+              "Synthesizing compliant detailing blocks.",
+              "Autonomous detailing response complete. Updating CRM dashboard."
+            ]
+          },
+          {
+            q: "Is there an active patient assistance coupon?",
+            a: "Yes, Caare Healthtech provides a co-pay assistance coupon covering up to 40% of the patient out-of-pocket costs for CardioVance at verified pharmacies.",
+            logs: [
+              "Query received: metoprolol succinate patient coupon",
+              "Querying active campaign database...",
+              "Copay assistance verified. Campaign code: CC-CV-40.",
+              "Response generated successfully."
+            ]
+          }
+        ]
+      },
+      pediatric: {
+        physician: "Dr. Amit Patel",
+        greeting: "Hello Dr. Amit Patel, I'm MedRep 360, here to detail PediaGuard, our combined DTaP, IPV, and Hib pediatric vaccine. How can I help?",
+        logs: [
+          "Target clinical product: PediaGuard (DTaP Vaccine)",
+          "Agent ready. Awaiting physician query."
+        ],
+        questions: [
+          {
+            q: "What is the primary immunization schedule?",
+            a: "PediaGuard is administered as a 3-dose primary series at 2, 4, and 6 months of age. A booster dose may be given at 15-18 months of age in accordance with clinical guidelines.",
+            logs: [
+              "Query received: immunization schedule",
+              "Fetching pediatric clinical guidelines...",
+              "Compliance check: DTaP-IPV-Hib combo verified.",
+              "Response generated. Syncing detailing logs."
+            ]
+          },
+          {
+            q: "Check common side effects and safety profile.",
+            a: "The most common local reactions include pain, redness, and swelling at the injection site. Systemic adverse reactions include mild fever, irritability, and drowsiness.",
+            logs: [
+              "Query received: safety profile and side effects",
+              "Fetching clinical trial safety database...",
+              "Compliance check: verified with FDA safety labels.",
+              "Detailing output generated."
+            ]
+          },
+          {
+            q: "How does it improve clinic storage overhead?",
+            a: "PediaGuard combines five antigens into a single pre-filled syringe, reducing cold-chain storage space requirements by up to 60% compared to separate single-antigen vials.",
+            logs: [
+              "Query received: clinic storage benefits",
+              "Analyzing storage space savings...",
+              "Result: 60% cold-chain space reduction verified."
+            ]
+          }
+        ]
+      },
+      gp: {
+        physician: "Dr. Sunil Roy",
+        greeting: "Hello Dr. Sunil Roy, I'm MedRep 360, here to detail GlucoNorm, our once-daily SGLT2 inhibitor for glycemic control and cardiorenal protection. How can I help?",
+        logs: [
+          "Target clinical product: GlucoNorm (Diabetes)",
+          "Agent ready. Awaiting physician query."
+        ],
+        questions: [
+          {
+            q: "What are the cardiovascular protection benefits?",
+            a: "In the DAPA-HF trial, GlucoNorm demonstrated a 26% relative risk reduction in the composite of cardiovascular death or hospitalization for heart failure in patients with HFrEF.",
+            logs: [
+              "Query received: cardiovascular protection benefits",
+              "Fetching DAPA-HF clinical trials outcome database...",
+              "Safety check: verified cardiovascular claims.",
+              "Detailing response complete. Updating CRM dashboard."
+            ]
+          },
+          {
+            q: "What is the recommended starting dose?",
+            a: "The recommended starting dose for GlucoNorm is 10 mg taken orally once daily in the morning, with or without food.",
+            logs: [
+              "Query received: recommended starting dose",
+              "Querying FDA approved labeling...",
+              "Dose: 10mg QD verified."
+            ]
+          },
+          {
+            q: "Are there renal adjustment guidelines?",
+            a: "GlucoNorm is not recommended for glycemic control if eGFR is <45 mL/min/1.73m². However, it can be continued to reduce the risk of eGFR decline and cardiovascular events down to an eGFR of 25 mL/min/1.73m².",
+            logs: [
+              "Query received: renal adjustments",
+              "Querying eGFR drug parameters...",
+              "Warning: check eGFR parameters before starting."
+            ]
+          }
+        ]
+      }
+    };
+
+    let activeSpecialty = 'cardio';
+
+    function loadSpecialty(specialty) {
+      activeSpecialty = specialty;
+      const data = simData[specialty];
+      
+      // Update active tab button style
+      simTabs.forEach(btn => {
+        if (btn.getAttribute('data-specialty') === specialty) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+
+      // Reset Chat Body with greeting
+      simChatBody.innerHTML = `
+        <div class="chat-bubble agent">${data.greeting}</div>
+      `;
+      simChatBody.scrollTop = simChatBody.scrollHeight;
+
+      // Reset logs
+      simLogs.innerHTML = '';
+      data.logs.forEach(logText => {
+        const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'});
+        simLogs.innerHTML += `<div>[${time}] > ${logText}</div>`;
+      });
+      simLogs.scrollTop = simLogs.scrollHeight;
+
+      // Render preset questions
+      simChipsContainer.innerHTML = '';
+      data.questions.forEach((qObj, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'sim-chip-btn';
+        btn.innerText = qObj.q;
+        btn.addEventListener('click', () => askQuestion(qObj));
+        simChipsContainer.appendChild(btn);
+      });
+    }
+
+    async function askQuestion(qObj) {
+      // 1. Doctor Question bubble
+      const docBubble = document.createElement('div');
+      docBubble.className = 'chat-bubble doctor';
+      docBubble.innerText = qObj.q;
+      simChatBody.appendChild(docBubble);
+      simChatBody.scrollTop = simChatBody.scrollHeight;
+
+      // Disable buttons temporarily during generation
+      const buttons = simChipsContainer.querySelectorAll('.sim-chip-btn');
+      buttons.forEach(btn => btn.disabled = true);
+
+      // 2. Play telemetry logs sequentially
+      for (const logText of qObj.logs) {
+        await new Promise(r => setTimeout(r, 450));
+        const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'});
+        simLogs.innerHTML += `<div>[${time}] > ${logText}</div>`;
+        simLogs.scrollTop = simLogs.scrollHeight;
+      }
+
+      // 3. Agent response bubble
+      await new Promise(r => setTimeout(r, 300));
+      const agentBubble = document.createElement('div');
+      agentBubble.className = 'chat-bubble agent';
+      agentBubble.innerText = qObj.a;
+      simChatBody.appendChild(agentBubble);
+      simChatBody.scrollTop = simChatBody.scrollHeight;
+
+      // Enable buttons back
+      buttons.forEach(btn => btn.disabled = false);
+    }
+
+    // Attach click events to tab buttons
+    simTabs.forEach(btn => {
+      btn.addEventListener('click', () => {
+        loadSpecialty(btn.getAttribute('data-specialty'));
+      });
+    });
+
+    // Initialize Cardio
+    loadSpecialty('cardio');
+
+    // Navbar scroll effect
+    window.addEventListener('scroll', () => {
+      const navbar = document.querySelector('.navbar');
+      if (window.scrollY > 50) {
+        navbar.classList.add('scrolled');
+      } else {
+        navbar.classList.remove('scrolled');
+      }
     });
   </script>
 
