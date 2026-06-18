@@ -112,14 +112,9 @@ a {
 }
 
 .logo-icon {
-  width: 28px;
-  height: 28px;
-  color: #ffffff; /* White logo icon at top */
-  transition: color 0.3s ease;
-}
-
-.navbar.scrolled .logo-icon {
-  color: var(--primary-accent);
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
 }
 
 .nav-links {
