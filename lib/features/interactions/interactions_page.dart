@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../widgets/sidebar.dart';
+import '../../widgets/dashboard_card.dart';
 import '../../models/interaction.dart';
 import '../../models/doctor.dart';
 import '../../services/api_service.dart';
 import '../../services/session_state.dart';
+import '../../theme_config.dart';
 
 class InteractionsPage extends StatefulWidget {
   const InteractionsPage({super.key});
@@ -51,15 +53,15 @@ class _InteractionsPageState extends State<InteractionsPage> {
   Color _getTypeColor(String type) {
     switch (type.toLowerCase()) {
       case 'in-person':
-        return Colors.teal;
+        return const Color(0xFF0D9488); // Teal
       case 'virtual':
-        return Colors.blue;
+        return const Color(0xFF2563EB); // Blue
       case 'phone':
-        return Colors.orange;
+        return const Color(0xFFEA580C); // Orange
       case 'email':
-        return Colors.indigo;
+        return const Color(0xFF4F46E5); // Indigo
       default:
-        return Colors.grey;
+        return const Color(0xFF64748B); // Slate
     }
   }
 
@@ -121,31 +123,32 @@ class _InteractionsPageState extends State<InteractionsPage> {
                         const Text(
                           'Log New Interaction',
                           style: TextStyle(
-                            fontSize: 22,
+                            fontSize: 20,
                             fontWeight: FontWeight.bold,
-                            color: Colors.black87,
+                            color: Color(0xFF0F172A),
                           ),
                         ),
                         IconButton(
-                          icon: const Icon(Icons.close_rounded),
+                          icon: const Icon(Icons.close_rounded, color: Color(0xFF64748B)),
                           onPressed: () => Navigator.pop(context),
                         ),
                       ],
                     ),
-                    const Divider(),
+                    const Divider(color: Color(0xFFF1F5F9)),
                     const SizedBox(height: 16),
                     
                     // Doctor selection
                     const Text(
-                      'Select Doctor',
-                      style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey),
+                      'Select Target Doctor *',
+                      style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF475569), fontSize: 13),
                     ),
                     const SizedBox(height: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      padding: const EdgeInsets.symmetric(horizontal: 14),
                       decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey.shade300),
-                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                        borderRadius: BorderRadius.circular(12),
+                        color: const Color(0xFFF8FAFC),
                       ),
                       child: DropdownButtonHideUnderline(
                         child: DropdownButton<String>(
@@ -165,30 +168,34 @@ class _InteractionsPageState extends State<InteractionsPage> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 10),
+                    
+                    // Show doctor availability inline
                     Builder(
                       builder: (context) {
                         final selectedDoc = _doctors.firstWhere((d) => d.id == selectedDoctorId, orElse: () => _doctors.first);
                         final String availabilityText = (selectedDoc.availableFrom.isNotEmpty && selectedDoc.availableTo.isNotEmpty)
-                            ? 'Available: ${selectedDoc.availableFrom} to ${selectedDoc.availableTo}'
-                            : 'Available: Not specified (All day)';
+                            ? 'Preferred Sync window: ${selectedDoc.availableFrom} to ${selectedDoc.availableTo}'
+                            : 'Preferred Sync window: Not specified (Available anytime)';
                         return Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                           decoration: BoxDecoration(
-                            color: Colors.blueAccent.withOpacity(0.05),
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: Colors.blueAccent.withOpacity(0.1)),
+                            color: const Color(0xFFEFF6FF),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: const Color(0xFFBFDBFE)),
                           ),
                           child: Row(
                             children: [
-                              const Icon(Icons.access_time_filled_rounded, size: 16, color: Colors.blueAccent),
+                              const Icon(Icons.info_outline_rounded, size: 16, color: Color(0xFF2563EB)),
                               const SizedBox(width: 8),
-                              Text(
-                                availabilityText,
-                                style: const TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.blueAccent,
+                              Expanded(
+                                child: Text(
+                                  availabilityText,
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF2563EB),
+                                  ),
                                 ),
                               ),
                             ],
@@ -196,19 +203,20 @@ class _InteractionsPageState extends State<InteractionsPage> {
                         );
                       },
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 20),
 
                     // Type selection
                     const Text(
-                      'Interaction Type',
-                      style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey),
+                      'Interaction Channel Type *',
+                      style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF475569), fontSize: 13),
                     ),
                     const SizedBox(height: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      padding: const EdgeInsets.symmetric(horizontal: 14),
                       decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey.shade300),
-                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                        borderRadius: BorderRadius.circular(12),
+                        color: const Color(0xFFF8FAFC),
                       ),
                       child: DropdownButtonHideUnderline(
                         child: DropdownButton<String>(
@@ -228,107 +236,123 @@ class _InteractionsPageState extends State<InteractionsPage> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 20),
 
                     // Date & Time Picker Row
-                    const Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            'Interaction Date',
-                            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey),
-                          ),
-                        ),
-                        SizedBox(width: 16),
-                        Expanded(
-                          child: Text(
-                            'Interaction Time',
-                            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
                     Row(
                       children: [
                         Expanded(
-                          child: InkWell(
-                            onTap: () async {
-                              final picked = await showDatePicker(
-                                context: context,
-                                initialDate: selectedDate,
-                                firstDate: DateTime(2025),
-                                lastDate: DateTime(2030),
-                              );
-                              if (picked != null) {
-                                setModalState(() => selectedDate = picked);
-                              }
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-                              decoration: BoxDecoration(
-                                border: Border.all(color: Colors.grey.shade300),
-                                borderRadius: BorderRadius.circular(10),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Interaction Date *',
+                                style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF475569), fontSize: 13),
                               ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text('${selectedDate.year}-${selectedDate.month.toString().padLeft(2, '0')}-${selectedDate.day.toString().padLeft(2, '0')}'),
-                                  const Icon(Icons.calendar_today_rounded, color: Colors.blueAccent, size: 18),
-                                ],
+                              const SizedBox(height: 8),
+                              InkWell(
+                                onTap: () async {
+                                  final picked = await showDatePicker(
+                                    context: context,
+                                    initialDate: selectedDate,
+                                    firstDate: DateTime(2025),
+                                    lastDate: DateTime(2030),
+                                  );
+                                  if (picked != null) {
+                                    setModalState(() => selectedDate = picked);
+                                  }
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                                  decoration: BoxDecoration(
+                                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                                    borderRadius: BorderRadius.circular(12),
+                                    color: const Color(0xFFF8FAFC),
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text('${selectedDate.year}-${selectedDate.month.toString().padLeft(2, '0')}-${selectedDate.day.toString().padLeft(2, '0')}', style: const TextStyle(fontSize: 13)),
+                                      const Icon(Icons.calendar_today_rounded, color: Color(0xFF64748B), size: 16),
+                                    ],
+                                  ),
+                                ),
                               ),
-                            ),
+                            ],
                           ),
                         ),
                         const SizedBox(width: 16),
                         Expanded(
-                          child: InkWell(
-                            onTap: () async {
-                              final picked = await showTimePicker(
-                                context: context,
-                                initialTime: selectedTime,
-                              );
-                              if (picked != null) {
-                                setModalState(() => selectedTime = picked);
-                              }
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-                              decoration: BoxDecoration(
-                                border: Border.all(color: Colors.grey.shade300),
-                                borderRadius: BorderRadius.circular(10),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Interaction Time *',
+                                style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF475569), fontSize: 13),
                               ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(selectedTime.format(context)),
-                                  const Icon(Icons.access_time_rounded, color: Colors.blueAccent, size: 18),
-                                ],
+                              const SizedBox(height: 8),
+                              InkWell(
+                                onTap: () async {
+                                  final picked = await showTimePicker(
+                                    context: context,
+                                    initialTime: selectedTime,
+                                  );
+                                  if (picked != null) {
+                                    setModalState(() => selectedTime = picked);
+                                  }
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                                  decoration: BoxDecoration(
+                                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                                    borderRadius: BorderRadius.circular(12),
+                                    color: const Color(0xFFF8FAFC),
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(selectedTime.format(context), style: const TextStyle(fontSize: 13)),
+                                      const Icon(Icons.access_time_rounded, color: Color(0xFF64748B), size: 16),
+                                    ],
+                                  ),
+                                ),
                               ),
-                            ),
+                            ],
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 20),
 
                     // Notes input
                     const Text(
-                      'Discussion Notes',
-                      style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey),
+                      'Discussion / Summary Notes *',
+                      style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF475569), fontSize: 13),
                     ),
                     const SizedBox(height: 8),
                     TextField(
                       controller: notesController,
-                      maxLines: 3,
+                      maxLines: 4,
                       decoration: InputDecoration(
-                        hintText: 'What did you discuss with the doctor?',
+                        hintText: 'What details did you establish during this clinical interaction?',
+                        hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
+                        filled: true,
+                        fillColor: const Color(0xFFF8FAFC),
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: Color(0xFF3B82F6), width: 2),
                         ),
                       ),
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 28),
 
                     // Submit Button
                     SizedBox(
@@ -336,10 +360,10 @@ class _InteractionsPageState extends State<InteractionsPage> {
                       height: 50,
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blueAccent,
+                          backgroundColor: const Color(0xFF1E3A8A),
                           foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
+                            borderRadius: BorderRadius.circular(12),
                           ),
                         ),
                         onPressed: () async {
@@ -359,19 +383,19 @@ class _InteractionsPageState extends State<InteractionsPage> {
                                 showDialog(
                                   context: context,
                                   builder: (context) => AlertDialog(
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                                     title: const Row(
                                       children: [
-                                        Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 28),
-                                        SizedBox(width: 8),
-                                        Text('Doctor Unavailable'),
+                                        Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 24),
+                                        SizedBox(width: 10),
+                                        Text('Outside Doctor Hours'),
                                       ],
                                     ),
                                     content: Text('${selectedDoc.name} is only available from ${selectedDoc.availableFrom} until ${selectedDoc.availableTo}.\n\nSelected time: ${selectedTime.format(context)} is outside of their working hours. Please change the time.'),
                                     actions: [
                                       TextButton(
                                         onPressed: () => Navigator.pop(context),
-                                        child: const Text('OK', style: TextStyle(fontWeight: FontWeight.bold)),
+                                        child: const Text('Adjust Time', style: TextStyle(fontWeight: FontWeight.bold)),
                                       ),
                                     ],
                                   ),
@@ -401,11 +425,16 @@ class _InteractionsPageState extends State<InteractionsPage> {
 
                           final result = await _apiService.createInteraction(newInteractionMap);
                           if (result != null) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Interaction logged successfully!')),
-                            );
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Interaction logged successfully!'),
+                                  backgroundColor: Color(0xFF16A34A),
+                                ),
+                              );
+                            }
                           } else {
-                            // If backend failed/offline, save to local state for UX demonstration
+                            // If backend offline
                             final tempDocName = _getDoctorName(selectedDoctorId!);
                             final localMock = Interaction(
                               id: 'local_${DateTime.now().millisecondsSinceEpoch}',
@@ -418,15 +447,20 @@ class _InteractionsPageState extends State<InteractionsPage> {
                             setState(() {
                               _interactions.insert(0, localMock);
                             });
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Interaction logged locally (Backend Offline)')),
-                            );
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Interaction logged locally (Backend Offline)'),
+                                  backgroundColor: Color(0xFF2563EB),
+                                ),
+                              );
+                            }
                           }
                           _loadData();
                         },
                         child: const Text(
-                          'Save Log',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          'Save Discussion Log',
+                          style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                         ),
                       ),
                     ),
@@ -447,244 +481,287 @@ class _InteractionsPageState extends State<InteractionsPage> {
     final String role = SessionState.getRole(user?.userMetadata);
     final isRep = role == 'Medical Representative';
 
+    final size = MediaQuery.of(context).size;
+    final isWide = size.width > 960;
+
     return Scaffold(
-      backgroundColor: Colors.grey[50],
-      appBar: AppBar(
-        title: const Text(
-          'Interaction Logs',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        backgroundColor: Colors.blueAccent,
-        foregroundColor: Colors.white,
-        elevation: 2,
-        leading: Builder(
-          builder: (context) {
-            return IconButton(
-              icon: const Icon(Icons.menu),
-              onPressed: () {
-                Scaffold.of(context).openDrawer();
-              },
-            );
-          },
-        ),
-      ),
-      drawer: const Sidebar(),
-      body: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Hero Header Card
-            Container(
-              width: double.infinity,
-              height: 180,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20),
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF004D40), Color(0xFF00796B)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.teal.withOpacity(0.3),
-                    blurRadius: 15,
-                    offset: const Offset(0, 5),
+      backgroundColor: AppTheme.backgroundColor,
+      drawer: isWide ? null : const Sidebar(),
+      body: Row(
+        children: [
+          if (isWide)
+            const Sidebar(isPermanent: true),
+          Expanded(
+            child: SafeArea(
+              child: Column(
+                children: [
+                  _buildAppBar(context),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.all(24.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildHeroCard(),
+                          const SizedBox(height: 24),
+                          
+                          // Interactions Statistics Row
+                          _buildInteractionsStatsRow(),
+                          const SizedBox(height: 24),
+                          
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text(
+                                'Recent Communications Log',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF0F172A),
+                                ),
+                              ),
+                              if (isRep)
+                                ElevatedButton.icon(
+                                  onPressed: _showAddInteractionDialog,
+                                  icon: const Icon(Icons.add_rounded, size: 18),
+                                  label: const Text('Log Interaction'),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFF0D9488), // Teal theme
+                                    foregroundColor: Colors.white,
+                                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+
+                          _isLoading
+                              ? const Center(child: Padding(
+                                  padding: EdgeInsets.all(32.0),
+                                  child: CircularProgressIndicator(color: Color(0xFF1E3A8A)),
+                                ))
+                              : _interactions.isEmpty
+                                  ? _buildEmptyState()
+                                  : _buildLogsListView(_interactions),
+                        ],
+                      ),
+                    ),
                   ),
                 ],
               ),
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
-                  gradient: LinearGradient(
-                    colors: [
-                      Colors.teal.withOpacity(0.4),
-                      Colors.transparent,
-                    ],
-                    begin: Alignment.bottomLeft,
-                    end: Alignment.topRight,
-                  ),
-                ),
-                padding: const EdgeInsets.all(24.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Doctor Interactions',
-                          style: TextStyle(
-                            fontSize: 28,
-                            fontWeight: FontWeight.w900,
-                            color: Colors.white,
-                          ),
-                        ).animate().fade().slideY(begin: 0.3),
-                        const SizedBox(height: 8),
-                        const Text(
-                          'Track visits, discussions, and relationships.',
-                          style: TextStyle(fontSize: 16, color: Colors.white70),
-                        ).animate().fade(delay: 200.ms).slideY(begin: 0.3),
-                      ],
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 8,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        'Total Logs: ${_interactions.length}',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ).animate().fade(delay: 400.ms).scale(),
-                  ],
-                ),
-              ),
             ),
-            const SizedBox(height: 24),
+          ),
+        ],
+      ),
+    );
+  }
 
-            // Logs Header with FAB Action
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  'Recent Discussions',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
-                ),
-                if (isRep)
-                  ElevatedButton.icon(
-                    onPressed: _showAddInteractionDialog,
-                    icon: const Icon(Icons.add_rounded),
-                    label: const Text('Log Interaction'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blueAccent,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                  ),
-              ],
+  Widget _buildAppBar(BuildContext context) {
+    return Container(
+      color: AppTheme.surfaceColor,
+      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+      child: Row(
+        children: [
+          if (MediaQuery.of(context).size.width <= 960) ...[
+            IconButton(
+              icon: const Icon(Icons.menu, color: AppTheme.textMutedColor),
+              onPressed: () => Scaffold.of(context).openDrawer(),
             ),
-            const SizedBox(height: 16),
-
-            // Interactions List View
-            Expanded(
-              child: _isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : _interactions.isEmpty
-                      ? const Center(child: Text('No interactions logged.'))
-                      : ListView.builder(
-                          itemCount: _interactions.length,
-                          itemBuilder: (context, index) {
-                            final i = _interactions[index];
-                            final doctorName = i.doctorName.isNotEmpty
-                                ? i.doctorName
-                                : _getDoctorName(i.doctorId);
-                            final color = _getTypeColor(i.type);
-                            final icon = _getTypeIcon(i.type);
-
-                            return Card(
-                              elevation: 4,
-                              shadowColor: Colors.blueAccent.withOpacity(0.1),
-                              margin: const EdgeInsets.only(bottom: 16),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
-                                side: BorderSide(
-                                  color: Colors.blueAccent.withOpacity(0.05),
-                                ),
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.all(20.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Row(
-                                          children: [
-                                            CircleAvatar(
-                                              backgroundColor: color.withOpacity(0.1),
-                                              child: Icon(icon, color: color),
-                                            ),
-                                            const SizedBox(width: 12),
-                                            Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  doctorName,
-                                                  style: const TextStyle(
-                                                    fontSize: 18,
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
-                                                ),
-                                                const SizedBox(height: 2),
-                                                Text(
-                                                  i.type,
-                                                  style: TextStyle(
-                                                    color: color,
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 13,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ],
-                                        ),
-                                        Text(
-                                          i.date != null ? i.date!.toLocal().toString().substring(0, 10) : 'Recent',
-                                          style: const TextStyle(
-                                            color: Colors.grey,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 16),
-                                    const Text(
-                                      'Discussion Notes:',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.w600,
-                                        color: Colors.grey,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      i.notes,
-                                      style: const TextStyle(
-                                        fontSize: 15,
-                                        color: Colors.black87,
-                                        height: 1.4,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ).animate()
-                             .fade(duration: 400.ms, delay: (50 * index).ms)
-                             .slideY(begin: 0.1);
-                          },
-                        ),
+            const SizedBox(width: 12),
+          ],
+          const Text(
+            'Doctor Interaction Registry',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: AppTheme.textMainColor,
             ),
-          ].animate(interval: 50.ms).fade(duration: 400.ms),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeroCard() {
+    return Container(
+      width: double.infinity,
+      height: 160,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
+        gradient: const LinearGradient(
+          colors: [AppTheme.primaryColor, AppTheme.secondaryColor],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
       ),
+      child: Stack(
+        children: [
+          Positioned(
+            right: -20,
+            bottom: -30,
+            child: Opacity(
+              opacity: 0.1,
+              child: const Icon(Icons.chat_bubble_rounded, size: 200, color: Colors.white),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(28.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Communication Loop Logs',
+                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: -0.5),
+                    ).animate().fade().slideY(begin: 0.1),
+                    const SizedBox(height: 6),
+                    const Text(
+                      'Register face-to-face checkups, phone check-ins, and virtual diagnostics feedback.',
+                      style: TextStyle(fontSize: 14, color: Colors.white70),
+                    ).animate().fade(delay: 200.ms).slideY(begin: 0.1),
+                  ],
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    'Total Logs: ${_interactions.length}',
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                  ),
+                ).animate().scale(delay: 300.ms),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(40.0),
+      decoration: BoxDecoration(
+        color: AppTheme.surfaceColor,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppTheme.hairlineColor),
+      ),
+      child: const Center(
+        child: Text(
+          'No interactions registered in this loop yet.',
+          style: TextStyle(color: AppTheme.textMutedColor),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLogsListView(List<Interaction> logs) {
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: logs.length,
+      itemBuilder: (context, index) {
+        final i = logs[index];
+        final docName = i.doctorName.isNotEmpty ? i.doctorName : _getDoctorName(i.doctorId);
+        final color = _getTypeColor(i.type);
+        final icon = _getTypeIcon(i.type);
+
+        return Container(
+          margin: const EdgeInsets.only(bottom: 16),
+          decoration: BoxDecoration(
+            color: AppTheme.surfaceColor,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: AppTheme.hairlineColor),
+            boxShadow: [
+              BoxShadow(
+                color: AppTheme.primaryColor.withOpacity(0.01),
+                blurRadius: 16,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        CircleAvatar(
+                          backgroundColor: color.withOpacity(0.08),
+                          child: Icon(icon, color: color, size: 20),
+                        ),
+                        const SizedBox(width: 12),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              docName,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: AppTheme.textMainColor,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              i.type,
+                              style: TextStyle(
+                                color: color,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    Text(
+                      i.date != null ? i.date!.toLocal().toString().substring(0, 10) : 'Recent',
+                      style: const TextStyle(
+                        color: Color(0xFF94A3B8),
+                        fontWeight: FontWeight.w600,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Established Notes:',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF94A3B8),
+                    fontSize: 11,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  i.notes,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: Color(0xFF334155),
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ).animate().fade(duration: 400.ms, delay: (index * 40).ms).slideY(begin: 0.05);
+      },
     );
   }
 
@@ -727,5 +804,42 @@ class _InteractionsPageState extends State<InteractionsPage> {
     } else {
       return selMin >= startMin || selMin <= endMin;
     }
+  }
+
+  Widget _buildInteractionsStatsRow() {
+    final totalCount = _interactions.length;
+    final inPersonCount = _interactions.where((e) => e.type.toLowerCase().contains('person') || e.type.toLowerCase().contains('in-person')).length;
+    final virtualCount = _interactions.where((e) => e.type.toLowerCase().contains('virtual')).length;
+
+    return Row(
+      children: [
+        Expanded(
+          child: DashboardCard(
+            title: 'Total Syncs',
+            value: '$totalCount',
+            icon: Icons.chat_rounded,
+            accentColor: const Color(0xFF0D9488),
+          ),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: DashboardCard(
+            title: 'In-person Visits',
+            value: '$inPersonCount',
+            icon: Icons.people_rounded,
+            accentColor: const Color(0xFF2563EB),
+          ),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: DashboardCard(
+            title: 'Virtual / Remotes',
+            value: '$virtualCount',
+            icon: Icons.videocam_rounded,
+            accentColor: const Color(0xFF7C3AED),
+          ),
+        ),
+      ],
+    );
   }
 }

@@ -9,8 +9,7 @@ class SupabaseService {
 	Future<List<Lead>> fetchLeads() async {
 		try {
 			final res = await _client.from('leads').select();
-			if (res == null) return _getDummyLeads();
-			final list = List.from(res as List);
+			final list = List.from(res);
 			return list.map((e) => Lead.fromMap(Map<String, dynamic>.from(e))).toList();
 		} catch (e) {
 			// Fallback to dummy data if table is missing or query fails
@@ -67,15 +66,13 @@ class SupabaseService {
 
 	Future<List<Interaction>> fetchInteractions() async {
 		final res = await _client.from('interactions').select();
-		if (res == null) return [];
-		final list = List.from(res as List);
+		final list = List.from(res);
 		return list.map((e) => Interaction.fromMap(Map<String, dynamic>.from(e))).toList();
 	}
 
 	Future<List<Doctor>> fetchDoctors() async {
 		final res = await _client.from('doctors').select();
-		if (res == null) return [];
-		final list = List.from(res as List);
+		final list = List.from(res);
 		return list.map((e) => Doctor.fromMap(Map<String, dynamic>.from(e))).toList();
 	}
 }

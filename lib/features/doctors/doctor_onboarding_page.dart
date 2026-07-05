@@ -3,6 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../../widgets/sidebar.dart';
 import '../../models/doctor.dart';
 import '../../services/api_service.dart';
+import '../../theme_config.dart';
 
 class DoctorOnboardingPage extends StatefulWidget {
   const DoctorOnboardingPage({super.key});
@@ -67,7 +68,6 @@ class _DoctorOnboardingPageState extends State<DoctorOnboardingPage> {
     }
   }
 
-  // Common submit function
   Future<void> _submitOnboarding(String status, {DateTime? scheduledTime}) async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -105,12 +105,14 @@ class _DoctorOnboardingPageState extends State<DoctorOnboardingPage> {
     setState(() => _isSubmitting = false);
 
     if (newDoctor != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Onboarded: ${newDoctor.name} ($status)'),
-          backgroundColor: Colors.green.shade700,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Onboarded: ${newDoctor.name} ($status)'),
+            backgroundColor: const Color(0xFF16A34A),
+          ),
+        );
+      }
       _clearForm();
       _fetchDoctors();
     } else {
@@ -132,12 +134,14 @@ class _DoctorOnboardingPageState extends State<DoctorOnboardingPage> {
       setState(() {
         _doctors.insert(0, mockDoc);
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Onboarded (Demo Mode): ${mockDoc.name} ($status)'),
-          backgroundColor: Colors.blue.shade700,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Onboarded (Demo Mode): ${mockDoc.name} ($status)'),
+            backgroundColor: const Color(0xFF2563EB),
+          ),
+        );
+      }
       _clearForm();
     }
   }
@@ -192,7 +196,6 @@ class _DoctorOnboardingPageState extends State<DoctorOnboardingPage> {
     }
   }
 
-  // Launches dialog for scheduling date and time
   Future<void> _scheduleCallDialog() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -201,18 +204,6 @@ class _DoctorOnboardingPageState extends State<DoctorOnboardingPage> {
       initialDate: DateTime.now().add(const Duration(days: 1)),
       firstDate: DateTime.now(),
       lastDate: DateTime.now().add(const Duration(days: 30)),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: ColorScheme.light(
-              primary: Colors.orange.shade700,
-              onPrimary: Colors.white,
-              onSurface: Colors.black87,
-            ),
-          ),
-          child: child!,
-        );
-      },
     );
 
     if (pickedDate == null) return;
@@ -221,18 +212,6 @@ class _DoctorOnboardingPageState extends State<DoctorOnboardingPage> {
     final TimeOfDay? pickedTime = await showTimePicker(
       context: context,
       initialTime: const TimeOfDay(hour: 10, minute: 0),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: ColorScheme.light(
-              primary: Colors.orange.shade700,
-              onPrimary: Colors.white,
-              onSurface: Colors.black87,
-            ),
-          ),
-          child: child!,
-        );
-      },
     );
 
     if (pickedTime == null) return;
@@ -262,7 +241,7 @@ class _DoctorOnboardingPageState extends State<DoctorOnboardingPage> {
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.redAccent,
+                backgroundColor: const Color(0xFFEF4444),
                 foregroundColor: Colors.white,
               ),
               onPressed: () => Navigator.pop(context, true),
@@ -278,303 +257,36 @@ class _DoctorOnboardingPageState extends State<DoctorOnboardingPage> {
       final success = await _apiService.deleteDoctor(doc.id);
       setState(() => _isSubmitting = false);
       if (success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Deleted doctor: ${doc.name}'),
-            backgroundColor: Colors.red.shade700,
-          ),
-        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Deleted doctor: ${doc.name}'),
+              backgroundColor: const Color(0xFFEF4444),
+            ),
+          );
+        }
         _fetchDoctors();
       } else {
-        // Offline fallback deletion
         setState(() {
           _doctors.removeWhere((d) => d.id == doc.id);
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Deleted doctor (Demo Mode): ${doc.name}'),
-            backgroundColor: Colors.red.shade700,
-          ),
-        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Deleted doctor (Demo Mode): ${doc.name}'),
+              backgroundColor: const Color(0xFFEF4444),
+            ),
+          );
+        }
       }
     }
   }
 
-  Future<void> _editDoctorDialog(Doctor doc) async {
-    final formKey = GlobalKey<FormState>();
-    final nameCtrl = TextEditingController(text: doc.name);
-    final mobileCtrl = TextEditingController(text: doc.mobile);
-    final specialtyCtrl = TextEditingController(text: doc.specialty);
-    final emailCtrl = TextEditingController(text: doc.email);
-    final locationCtrl = TextEditingController(text: doc.region);
-    final addressCtrl = TextEditingController(text: doc.address);
-    String availableFrom = doc.availableFrom;
-    String availableTo = doc.availableTo;
-    String currentStatus = doc.status;
-
-    await showDialog(
-      context: context,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setDialogState) {
-            return AlertDialog(
-              title: const Text('Edit Doctor Details'),
-              content: SizedBox(
-                width: 500,
-                child: SingleChildScrollView(
-                  child: Form(
-                    key: formKey,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        TextFormField(
-                          controller: nameCtrl,
-                          decoration: const InputDecoration(labelText: 'Name *'),
-                          validator: (val) => val == null || val.trim().isEmpty ? 'Enter name' : null,
-                        ),
-                        const SizedBox(height: 12),
-                        TextFormField(
-                          controller: mobileCtrl,
-                          decoration: const InputDecoration(labelText: 'Mobile *'),
-                          validator: (val) => val == null || val.trim().isEmpty ? 'Enter mobile' : null,
-                        ),
-                        const SizedBox(height: 12),
-                        TextFormField(
-                          controller: specialtyCtrl,
-                          decoration: const InputDecoration(labelText: 'Specialty'),
-                        ),
-                        const SizedBox(height: 12),
-                        TextFormField(
-                          controller: emailCtrl,
-                          decoration: const InputDecoration(labelText: 'Email'),
-                        ),
-                        const SizedBox(height: 12),
-                        TextFormField(
-                          controller: locationCtrl,
-                          decoration: const InputDecoration(labelText: 'Location'),
-                        ),
-                        const SizedBox(height: 12),
-                        TextFormField(
-                          controller: addressCtrl,
-                          decoration: const InputDecoration(labelText: 'Address'),
-                        ),
-                        const SizedBox(height: 12),
-                        // Dropdown for Status
-                        DropdownButtonFormField<String>(
-                          value: currentStatus,
-                          decoration: const InputDecoration(labelText: 'Status'),
-                          items: () {
-                            final list = ["Saved", "Call Scheduled", "AI Agent Launched", "Contact Now", "Already Contacted"];
-                            if (!list.contains(currentStatus)) {
-                              list.add(currentStatus);
-                            }
-                            return list.map((status) {
-                              return DropdownMenuItem<String>(
-                                value: status,
-                                child: Text(status),
-                              );
-                            }).toList();
-                          }(),
-                          onChanged: (val) {
-                            if (val != null) {
-                              setDialogState(() => currentStatus = val);
-                            }
-                          },
-                        ),
-                        const SizedBox(height: 16),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: OutlinedButton(
-                                onPressed: () async {
-                                  final TimeOfDay? picked = await showTimePicker(
-                                    context: context,
-                                    initialTime: TimeOfDay.now(),
-                                  );
-                                  if (picked != null) {
-                                    setDialogState(() {
-                                      availableFrom = picked.format(context);
-                                    });
-                                  }
-                                },
-                                child: Text(availableFrom.isNotEmpty ? 'From: $availableFrom' : 'Available From'),
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: OutlinedButton(
-                                onPressed: () async {
-                                  final TimeOfDay? picked = await showTimePicker(
-                                    context: context,
-                                    initialTime: TimeOfDay.now(),
-                                  );
-                                  if (picked != null) {
-                                    setDialogState(() {
-                                      availableTo = picked.format(context);
-                                    });
-                                  }
-                                },
-                                child: Text(availableTo.isNotEmpty ? 'To: $availableTo' : 'Available To'),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('Cancel'),
-                ),
-                ElevatedButton(
-                  onPressed: () async {
-                    if (!formKey.currentState!.validate()) return;
-                    
-                    final updatedPayload = {
-                      "name": nameCtrl.text.trim(),
-                      "mobile": mobileCtrl.text.trim(),
-                      "specialty": specialtyCtrl.text.trim(),
-                      "email": emailCtrl.text.trim(),
-                      "region": locationCtrl.text.trim(),
-                      "address": addressCtrl.text.trim(),
-                      "status": currentStatus,
-                      "availableFrom": availableFrom,
-                      "availableTo": availableTo,
-                    };
-
-                    Navigator.pop(context);
-                    setState(() => _isSubmitting = true);
-                    final updatedDoc = await _apiService.updateDoctor(doc.id, updatedPayload);
-                    setState(() => _isSubmitting = false);
-
-                    if (updatedDoc != null) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Updated details for: ${updatedDoc.name}'),
-                          backgroundColor: Colors.green.shade700,
-                        ),
-                      );
-                      _fetchDoctors();
-                    } else {
-                      // Offline/Demo fallback update
-                      final index = _doctors.indexWhere((d) => d.id == doc.id);
-                      if (index != -1) {
-                        setState(() {
-                          _doctors[index] = Doctor(
-                            id: doc.id,
-                            name: updatedPayload['name'] as String,
-                            mobile: updatedPayload['mobile'] as String,
-                            specialty: updatedPayload['specialty'] as String,
-                            email: updatedPayload['email'] as String,
-                            region: updatedPayload['region'] as String,
-                            address: updatedPayload['address'] as String,
-                            status: currentStatus,
-                            availableFrom: availableFrom,
-                            availableTo: availableTo,
-                            scheduledTime: doc.scheduledTime,
-                            customFields: doc.customFields,
-                          );
-                        });
-                      }
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Updated (Demo Mode): ${nameCtrl.text.trim()}'),
-                          backgroundColor: Colors.blue.shade700,
-                        ),
-                      );
-                    }
-                  },
-                  child: const Text('Save'),
-                ),
-              ],
-            );
-          },
-        );
-      },
-    );
-  }
-
-  Widget _buildStatusBadge(String status, DateTime? scheduledTime) {
-    Color bg;
-    Color text;
-    IconData icon;
-
-    switch (status) {
-      case 'AI Agent Launched':
-        bg = Colors.green.shade50;
-        text = Colors.green.shade800;
-        icon = Icons.rocket_launch_rounded;
-        break;
-      case 'Contact Now':
-        bg = Colors.blue.shade50;
-        text = Colors.blue.shade800;
-        icon = Icons.phone_android_rounded;
-        break;
-      case 'Contacted Now':
-      case 'Already Contacted':
-        bg = Colors.teal.shade50;
-        text = Colors.teal.shade800;
-        icon = Icons.check_circle_rounded;
-        break;
-      case 'Call Scheduled':
-        bg = Colors.amber.shade50;
-        text = Colors.orange.shade800;
-        icon = Icons.calendar_month_rounded;
-        break;
-      case 'Saved':
-      case 'Created':
-      default:
-        bg = Colors.grey.shade100;
-        text = Colors.grey.shade800;
-        icon = Icons.save_rounded;
-    }
-
-    String label = status;
-    if (status == 'Call Scheduled' && scheduledTime != null) {
-      label = 'Scheduled: ${_formatDateTime(scheduledTime)}';
-    }
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: text.withOpacity(0.1)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 14, color: text),
-          const SizedBox(width: 6),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-              color: text,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  String _formatDateTime(DateTime dt) {
-    final day = dt.day.toString().padLeft(2, '0');
-    final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    final month = months[dt.month - 1];
-    final hour12 = dt.hour == 0 ? 12 : (dt.hour > 12 ? dt.hour - 12 : dt.hour);
-    final ampm = dt.hour >= 12 ? 'PM' : 'AM';
-    final minute = dt.minute.toString().padLeft(2, '0');
-    return '$day $month, $hour12:$minute $ampm';
-  }
-
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final isWide = size.width > 960;
+
     final filteredDoctors = _doctors.where((doc) {
       final nameMatches = doc.name.toLowerCase().contains(_searchQuery.toLowerCase());
       if (_statusFilter == "All") return nameMatches;
@@ -582,600 +294,402 @@ class _DoctorOnboardingPageState extends State<DoctorOnboardingPage> {
     }).toList();
 
     return Scaffold(
-      backgroundColor: Colors.grey[50],
-      appBar: AppBar(
-        title: const Text(
-          'Onboarding',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        backgroundColor: Colors.blueAccent,
-        foregroundColor: Colors.white,
-        elevation: 2,
-        leading: Builder(
-          builder: (context) {
-            return IconButton(
-              icon: const Icon(Icons.menu),
-              onPressed: () => Scaffold.of(context).openDrawer(),
-            );
-          },
-        ),
-      ),
-      drawer: const Sidebar(),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Hero Title Card
-            Container(
-              width: double.infinity,
-              height: 180,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20),
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF1565C0), Color(0xFF00ACC1)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.blueAccent.withOpacity(0.3),
-                    blurRadius: 15,
-                    offset: const Offset(0, 5),
+      backgroundColor: AppTheme.backgroundColor,
+      drawer: isWide ? null : const Sidebar(),
+      body: Row(
+        children: [
+          if (isWide)
+            const Sidebar(isPermanent: true),
+          Expanded(
+            child: SafeArea(
+              child: Column(
+                children: [
+                  _buildAppBar(context),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.all(24.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildHeroCard(),
+                          const SizedBox(height: 24),
+                          
+                          if (isWide) ...[
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Expanded(
+                                  flex: 6,
+                                  child: _buildFormSection(isWide),
+                                ),
+                                const SizedBox(width: 24),
+                                Expanded(
+                                  flex: 5,
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      _buildListHeader(),
+                                      const SizedBox(height: 16),
+                                      _isLoadingDoctors
+                                          ? const Center(child: Padding(
+                                              padding: EdgeInsets.all(32.0),
+                                              child: CircularProgressIndicator(color: Color(0xFF1E3A8A)),
+                                            ))
+                                          : filteredDoctors.isEmpty
+                                              ? _buildEmptyState()
+                                              : _buildDoctorsListView(filteredDoctors),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ] else ...[
+                            _buildFormSection(isWide),
+                            const SizedBox(height: 32),
+                            _buildListHeader(),
+                            const SizedBox(height: 16),
+                            _isLoadingDoctors
+                                ? const Center(child: Padding(
+                                    padding: EdgeInsets.all(32.0),
+                                    child: CircularProgressIndicator(color: Color(0xFF1E3A8A)),
+                                  ))
+                                : filteredDoctors.isEmpty
+                                    ? _buildEmptyState()
+                                    : _buildDoctorsListView(filteredDoctors),
+                          ],
+                        ],
+                      ),
+                    ),
                   ),
                 ],
               ),
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
-                  gradient: LinearGradient(
-                    colors: [
-                      Colors.blueAccent.withOpacity(0.4),
-                      Colors.transparent,
-                    ],
-                    begin: Alignment.bottomLeft,
-                    end: Alignment.topRight,
-                  ),
-                ),
-                padding: const EdgeInsets.all(24.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.end,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAppBar(BuildContext context) {
+    return Container(
+      color: AppTheme.surfaceColor,
+      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+      child: Row(
+        children: [
+          if (MediaQuery.of(context).size.width <= 960) ...[
+            IconButton(
+              icon: const Icon(Icons.menu, color: AppTheme.textMutedColor),
+              onPressed: () => Scaffold.of(context).openDrawer(),
+            ),
+            const SizedBox(width: 12),
+          ],
+          const Text(
+            'Onboard & Portfolio Sync',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: AppTheme.textMainColor,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeroCard() {
+    return Container(
+      width: double.infinity,
+      height: 160,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
+        gradient: const LinearGradient(
+          colors: [AppTheme.primaryColor, AppTheme.secondaryColor], // Sky blue to Cobalt
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: Stack(
+        children: [
+          Positioned(
+            right: -20,
+            bottom: -30,
+            child: Opacity(
+              opacity: 0.1,
+              child: const Icon(Icons.person_add_alt_1_rounded, size: 200, color: Colors.white),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(28.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Doctor Onboarding',
-                          style: TextStyle(
-                            fontSize: 28,
-                            fontWeight: FontWeight.w900,
-                            color: Colors.white,
-                          ),
-                        ).animate().fade().slideY(begin: 0.3),
-                        const SizedBox(height: 8),
-                        const Text(
-                          'Register new doctors and configure AI Agent interactions.',
-                          style: TextStyle(fontSize: 16, color: Colors.white70),
-                        ).animate().fade(delay: 200.ms).slideY(begin: 0.3),
-                      ],
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 8,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        'Total Onboarded: ${_doctors.length}',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ).animate().fade(delay: 400.ms).scale(),
+                    const Text(
+                      'Account Onboarding Console',
+                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: -0.5),
+                    ).animate().fade().slideY(begin: 0.1),
+                    const SizedBox(height: 6),
+                    const Text(
+                      'Register primary profiles, log clinic hours, and schedule initial sync targets.',
+                      style: TextStyle(fontSize: 14, color: Colors.white70),
+                    ).animate().fade(delay: 200.ms).slideY(begin: 0.1),
                   ],
                 ),
-              ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    'Onboarded: ${_doctors.length}',
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                  ),
+                ).animate().scale(delay: 300.ms),
+              ],
             ),
-            const SizedBox(height: 24),
+          ),
+        ],
+      ),
+    );
+  }
 
-            // Form Layout Card
-            Card(
-              elevation: 4,
-              shadowColor: Colors.blueAccent.withOpacity(0.1),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-                side: BorderSide(color: Colors.blueAccent.withOpacity(0.05)),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(24.0),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Row(
+  Widget _buildFormSection(bool isWide) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppTheme.surfaceColor,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: AppTheme.hairlineColor),
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.primaryColor.withOpacity(0.01),
+            blurRadius: 24,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(24.0),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Row(
+              children: [
+                Icon(Icons.assignment_ind_rounded, color: AppTheme.primaryColor, size: 22),
+                SizedBox(width: 10),
+                Text(
+                  'Primary Account Profiler',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.textMainColor),
+                ),
+              ],
+            ),
+            const Divider(color: Color(0xFFF1F5F9), height: 32),
+            
+            // Grid Form fields
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final useRow = constraints.maxWidth > 760;
+                return Column(
+                  children: [
+                    if (useRow) ...[
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Icon(Icons.person_add_alt_1_rounded, color: Colors.blueAccent),
-                          SizedBox(width: 10),
-                          Text(
-                            'Add New Doctor',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black87,
-                            ),
-                          ),
+                          Expanded(child: _buildTextFormField(_nameController, 'Doctor Full Name *', 'e.g. Dr. Arthur Pendelton', true)),
+                          const SizedBox(width: 20),
+                          Expanded(child: _buildTextFormField(_mobileController, 'Mobile Phone *', 'e.g. +35389000000', true)),
                         ],
                       ),
-                      const Divider(height: 32),
-                      
-                      // Two column form layout (Responsive)
-                      LayoutBuilder(
-                        builder: (context, constraints) {
-                          bool isWide = constraints.maxWidth > 800;
-                          return isWide
-                              ? Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Expanded(child: _buildLeftFields()),
-                                    const SizedBox(width: 32),
-                                    Expanded(child: _buildRightFields()),
-                                  ],
-                                )
-                              : Column(
-                                  children: [
-                                    _buildLeftFields(),
-                                    const SizedBox(height: 16),
-                                    _buildRightFields(),
-                                  ],
-                                );
-                        },
+                      const SizedBox(height: 16),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(child: _buildTextFormField(_specialtyController, 'Clinical Specialty', 'e.g. Cardiology, GP', false)),
+                          const SizedBox(width: 20),
+                          Expanded(child: _buildTextFormField(_emailController, 'Email ID', 'e.g. arthur@hospital.org', false)),
+                        ],
                       ),
-                      
-                      const SizedBox(height: 24),
-                      
-                      // Custom Field section
-                      _buildCustomFieldsSection(),
-                      
-                      const SizedBox(height: 32),
-                      
-                      // Button Actions Row
-                      if (_isSubmitting)
-                        const Center(
-                          child: Padding(
-                            padding: EdgeInsets.symmetric(vertical: 8.0),
-                            child: CircularProgressIndicator(),
-                          ),
-                        )
-                      else
-                        LayoutBuilder(
-                          builder: (context, constraints) {
-                            bool isWide = constraints.maxWidth > 800;
-                            final buttonList = [
-                              // Button 1: Saved
-                              Expanded(
-                                flex: isWide ? 1 : 0,
-                                child: SizedBox(
-                                  height: 50,
-                                  child: ElevatedButton.icon(
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.blueGrey.shade700,
-                                      foregroundColor: Colors.white,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                    ),
-                                    onPressed: () => _submitOnboarding("Saved"),
-                                    icon: const Icon(Icons.save_rounded),
-                                    label: const Text(
-                                      'Saved',
-                                      style: TextStyle(fontWeight: FontWeight.bold),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 12, height: 12),
-                              // Button 2: Schedule Now
-                              Expanded(
-                                flex: isWide ? 1 : 0,
-                                child: SizedBox(
-                                  height: 50,
-                                  child: ElevatedButton.icon(
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.orange.shade800,
-                                      foregroundColor: Colors.white,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                    ),
-                                    onPressed: _scheduleCallDialog,
-                                    icon: const Icon(Icons.calendar_month_rounded),
-                                    label: const Text(
-                                      'Schedule Now',
-                                      style: TextStyle(fontWeight: FontWeight.bold),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 12, height: 12),
-                              // Button 3: Contact Now
-                              Expanded(
-                                flex: isWide ? 1 : 0,
-                                child: SizedBox(
-                                  height: 50,
-                                  child: ElevatedButton.icon(
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.blue.shade700,
-                                      foregroundColor: Colors.white,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                    ),
-                                    onPressed: () => _submitOnboarding("Contact Now"),
-                                    icon: const Icon(Icons.phone_android_rounded),
-                                    label: const Text(
-                                      'Contact Now',
-                                      style: TextStyle(fontWeight: FontWeight.bold),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 12, height: 12),
-                              // Button 4: Already Contacted
-                              Expanded(
-                                flex: isWide ? 1 : 0,
-                                child: SizedBox(
-                                  height: 50,
-                                  child: ElevatedButton.icon(
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.green.shade700,
-                                      foregroundColor: Colors.white,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                    ),
-                                    onPressed: () => _submitOnboarding("Already Contacted"),
-                                    icon: const Icon(Icons.check_circle_rounded),
-                                    label: const Text(
-                                      'Already Contacted',
-                                      style: TextStyle(fontWeight: FontWeight.bold),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ];
-
-                            return isWide
-                                ? Row(children: buttonList)
-                                : Column(
-                                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                                    children: buttonList,
-                                  );
-                          },
-                        ),
-                    ],
-                  ),
-                ),
-              ),
-            ).animate().fade(duration: 500.ms).slideY(begin: 0.05),
+                      const SizedBox(height: 16),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(child: _buildTextFormField(_locationController, 'Clinical Region / Location', 'e.g. Dublin South', false)),
+                          const SizedBox(width: 20),
+                          Expanded(child: _buildTextFormField(_addressController, 'Detailed Address', 'e.g. St. James Hospital Block B', false)),
+                        ],
+                      ),
+                    ] else ...[
+                      _buildTextFormField(_nameController, 'Doctor Full Name *', 'e.g. Dr. Arthur Pendelton', true),
+                      const SizedBox(height: 16),
+                      _buildTextFormField(_mobileController, 'Mobile Phone *', 'e.g. +35389000000', true),
+                      const SizedBox(height: 16),
+                      _buildTextFormField(_specialtyController, 'Clinical Specialty', 'e.g. Cardiology, GP', false),
+                      const SizedBox(height: 16),
+                      _buildTextFormField(_emailController, 'Email ID', 'e.g. arthur@hospital.org', false),
+                      const SizedBox(height: 16),
+                      _buildTextFormField(_locationController, 'Clinical Region / Location', 'e.g. Dublin South', false),
+                      const SizedBox(height: 16),
+                      _buildTextFormField(_addressController, 'Detailed Address', 'e.g. St. James Hospital Block B', false),
+                    ]
+                  ],
+                );
+              },
+            ),
             
-            const SizedBox(height: 36),
-
-            // Onboarded Doctors Title & Filters
+            const SizedBox(height: 24),
+            
+            // Available times row
+            const Text(
+              'On-call Availability Windows',
+              style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF475569)),
+            ),
+            const SizedBox(height: 10),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  'Onboarded Doctors Log',
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
+                Expanded(
+                  child: OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      side: const BorderSide(color: AppTheme.hairlineColor),
+                    ),
+                    onPressed: () => _selectAvailabilityTime(true),
+                    icon: const Icon(Icons.access_time_rounded, size: 16, color: AppTheme.textMutedColor),
+                    label: Text(_availableFrom.isNotEmpty ? 'From: $_availableFrom' : 'Available From', style: const TextStyle(color: AppTheme.textMutedColor)),
                   ),
                 ),
-                // Filter dropdown
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    border: Border.all(color: Colors.grey.shade300),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: DropdownButtonHideUnderline(
-                    child: DropdownButton<String>(
-                      value: _statusFilter,
-                      items: ["All", "Saved", "Call Scheduled", "AI Agent Launched", "Contact Now", "Already Contacted"].map((String status) {
-                        return DropdownMenuItem<String>(
-                          value: status,
-                          child: Text(status),
-                        );
-                      }).toList(),
-                      onChanged: (val) {
-                        if (val != null) {
-                          setState(() => _statusFilter = val);
-                        }
-                      },
+                const SizedBox(width: 16),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      side: const BorderSide(color: AppTheme.hairlineColor),
                     ),
+                    onPressed: () => _selectAvailabilityTime(false),
+                    icon: const Icon(Icons.access_time_rounded, size: 16, color: Color(0xFF64748B)),
+                    label: Text(_availableTo.isNotEmpty ? 'To: $_availableTo' : 'Available To'),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 16),
-
-            // Search Bar
-            TextField(
-              decoration: InputDecoration(
-                hintText: 'Search by doctor name...',
-                prefixIcon: const Icon(Icons.search_rounded),
-                filled: true,
-                fillColor: Colors.white,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.grey.shade300),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.grey.shade300),
-                ),
+            
+            const SizedBox(height: 24),
+            
+            // Dynamic custom fields
+            _buildCustomFieldsSection(),
+            
+            const SizedBox(height: 32),
+            
+            // Submit Button Actions
+            if (_isSubmitting)
+              const Center(child: CircularProgressIndicator(color: Color(0xFF1E3A8A)))
+            else
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final wideButtons = constraints.maxWidth > 600;
+                  final buttonList = [
+                    Expanded(
+                      flex: wideButtons ? 1 : 0,
+                      child: SizedBox(
+                        height: 48,
+                        child: ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF64748B),
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                          onPressed: () => _submitOnboarding("Saved"),
+                          icon: const Icon(Icons.save_rounded, size: 16),
+                          label: const Text('Save Local Profile', style: TextStyle(fontWeight: FontWeight.bold)),
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: wideButtons ? 12 : 0, height: wideButtons ? 0 : 12),
+                    Expanded(
+                      flex: wideButtons ? 1 : 0,
+                      child: SizedBox(
+                        height: 48,
+                        child: ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFEA580C),
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                          onPressed: _scheduleCallDialog,
+                          icon: const Icon(Icons.calendar_month_rounded, size: 16),
+                          label: const Text('Schedule Initial Call', style: TextStyle(fontWeight: FontWeight.bold)),
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: wideButtons ? 12 : 0, height: wideButtons ? 0 : 12),
+                    Expanded(
+                      flex: wideButtons ? 1 : 0,
+                      child: SizedBox(
+                        height: 48,
+                        child: ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppTheme.primaryColor,
+                            foregroundColor: AppTheme.backgroundColor,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                          onPressed: () => _submitOnboarding("MedRep Launched"),
+                          icon: const Icon(Icons.rocket_launch_rounded, size: 16),
+                          label: const Text('Launch MedRep', style: TextStyle(fontWeight: FontWeight.bold)),
+                        ),
+                      ),
+                    ),
+                  ];
+                  
+                  return wideButtons
+                      ? Row(children: buttonList)
+                      : Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: buttonList);
+                },
               ),
-              onChanged: (val) {
-                setState(() => _searchQuery = val);
-              },
-            ),
-            const SizedBox(height: 16),
-
-            // Onboarded List View
-            _isLoadingDoctors
-                ? const Center(child: CircularProgressIndicator())
-                : filteredDoctors.isEmpty
-                    ? const Center(
-                        child: Padding(
-                          padding: EdgeInsets.all(32.0),
-                          child: Text(
-                            'No onboarded doctors found.',
-                            style: TextStyle(fontSize: 16, color: Colors.grey),
-                          ),
-                        ),
-                      )
-                    : Card(
-                        elevation: 4,
-                        shadowColor: Colors.blueAccent.withOpacity(0.1),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                          side: BorderSide(color: Colors.blueAccent.withOpacity(0.05)),
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(16),
-                          child: ListView.separated(
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            itemCount: filteredDoctors.length,
-                            separatorBuilder: (context, index) => Divider(height: 1, color: Colors.grey[200]),
-                            itemBuilder: (context, index) {
-                              final doc = filteredDoctors[index];
-                              return ListTile(
-                                contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                                leading: CircleAvatar(
-                                  backgroundColor: Colors.blueAccent.withOpacity(0.1),
-                                  child: const Icon(Icons.person, color: Colors.blueAccent),
-                                ),
-                                title: Text(
-                                  doc.name,
-                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                                ),
-                                subtitle: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const SizedBox(height: 4),
-                                    Text('Mobile: ${doc.mobile.isNotEmpty ? doc.mobile : 'N/A'} • Specialty: ${doc.specialty}'),
-                                    const SizedBox(height: 2),
-                                    Text('Location: ${doc.region} • Email: ${doc.email.isNotEmpty ? doc.email : 'N/A'}'),
-                                    if (doc.availableFrom.isNotEmpty && doc.availableTo.isNotEmpty) ...[
-                                      const SizedBox(height: 2),
-                                      Text('Available: ${doc.availableFrom} to ${doc.availableTo}'),
-                                    ],
-                                    if (doc.customFields.isNotEmpty) ...[
-                                      const SizedBox(height: 6),
-                                      Wrap(
-                                        spacing: 6,
-                                        runSpacing: 4,
-                                        children: doc.customFields.entries.map((entry) {
-                                          return Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                            decoration: BoxDecoration(
-                                              color: Colors.blueAccent.withOpacity(0.05),
-                                              borderRadius: BorderRadius.circular(12),
-                                              border: Border.all(color: Colors.blueAccent.withOpacity(0.1)),
-                                            ),
-                                            child: Text(
-                                              '${entry.key}: ${entry.value}',
-                                              style: const TextStyle(fontSize: 11, color: Colors.blueAccent, fontWeight: FontWeight.bold),
-                                            ),
-                                          );
-                                        }).toList(),
-                                      ),
-                                    ],
-                                  ],
-                                ),
-                                trailing: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    _buildStatusBadge(doc.status, doc.scheduledTime),
-                                    const SizedBox(width: 8),
-                                    IconButton(
-                                      icon: const Icon(Icons.edit_rounded, color: Colors.blueAccent),
-                                      onPressed: () => _editDoctorDialog(doc),
-                                      tooltip: 'Edit Doctor',
-                                    ),
-                                    IconButton(
-                                      icon: const Icon(Icons.delete_rounded, color: Colors.redAccent),
-                                      onPressed: () => _deleteDoctorConfirm(doc),
-                                      tooltip: 'Delete Doctor',
-                                    ),
-                                  ],
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                      ).animate().fade(duration: 500.ms, delay: 200.ms),
           ],
         ),
       ),
     );
   }
 
-  // Left Column Fields (Mandatory)
-  Widget _buildLeftFields() {
+  Widget _buildTextFormField(TextEditingController controller, String label, String hint, bool required) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'MANDATORY DETAILS',
-          style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.blueAccent, letterSpacing: 1.0),
+        Text(
+          label,
+          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF475569)),
         ),
-        const SizedBox(height: 16),
-        
+        const SizedBox(height: 6),
         TextFormField(
-          controller: _nameController,
+          controller: controller,
           decoration: InputDecoration(
-            labelText: 'Doctor Name *',
-            prefixIcon: const Icon(Icons.person_rounded),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-          ),
-          validator: (val) {
-            if (val == null || val.trim().isEmpty) {
-              return 'Please enter the doctor\'s name';
-            }
-            return null;
-          },
-        ),
-        const SizedBox(height: 16),
-        
-        TextFormField(
-          controller: _mobileController,
-          keyboardType: TextInputType.phone,
-          decoration: InputDecoration(
-            labelText: 'Mobile Number *',
-            prefixIcon: const Icon(Icons.phone_rounded),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-          ),
-          validator: (val) {
-            if (val == null || val.trim().isEmpty) {
-              return 'Please enter the mobile number';
-            }
-            // Basic numeric/length validation
-            final reg = RegExp(r'^\+?[0-9]{10,13}$');
-            if (!reg.hasMatch(val.trim())) {
-              return 'Please enter a valid mobile number';
-            }
-            return null;
-          },
-        ),
-      ],
-    );
-  }
-
-  // Right Column Fields (Optional)
-  Widget _buildRightFields() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'OPTIONAL DETAILS',
-          style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey, letterSpacing: 1.0),
-        ),
-        const SizedBox(height: 16),
-        
-        TextFormField(
-          controller: _specialtyController,
-          decoration: InputDecoration(
-            labelText: 'Specialty',
-            prefixIcon: const Icon(Icons.medical_services_rounded),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-          ),
-        ),
-        const SizedBox(height: 16),
-        
-        TextFormField(
-          controller: _emailController,
-          keyboardType: TextInputType.emailAddress,
-          decoration: InputDecoration(
-            labelText: 'Email ID',
-            prefixIcon: const Icon(Icons.email_rounded),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-          ),
-          validator: (val) {
-            if (val != null && val.trim().isNotEmpty) {
-              final reg = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-              if (!reg.hasMatch(val.trim())) {
-                return 'Please enter a valid email address';
-              }
-            }
-            return null;
-          },
-        ),
-        const SizedBox(height: 16),
-        
-        TextFormField(
-          controller: _locationController,
-          decoration: InputDecoration(
-            labelText: 'Location',
-            prefixIcon: const Icon(Icons.location_on_rounded),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-          ),
-        ),
-        const SizedBox(height: 16),
-        
-        TextFormField(
-          controller: _addressController,
-          maxLines: 2,
-          decoration: InputDecoration(
-            labelText: 'Address',
-            prefixIcon: const Icon(Icons.home_rounded),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-          ),
-        ),
-        const SizedBox(height: 16),
-
-        // Doctor Availability Times
-        Row(
-          children: [
-            Expanded(
-              child: InkWell(
-                onTap: () => _selectAvailabilityTime(true),
-                child: InputDecorator(
-                  decoration: InputDecoration(
-                    labelText: 'Available From',
-                    prefixIcon: const Icon(Icons.access_time_rounded),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                  ),
-                  child: Text(_availableFrom.isNotEmpty ? _availableFrom : 'Select Time'),
-                ),
-              ),
+            hintText: hint,
+            hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
+            filled: true,
+            fillColor: const Color(0xFFF8FAFC),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
             ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: InkWell(
-                onTap: () => _selectAvailabilityTime(false),
-                child: InputDecorator(
-                  decoration: InputDecoration(
-                    labelText: 'Available To',
-                    prefixIcon: const Icon(Icons.access_time_filled_rounded),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                  ),
-                  child: Text(_availableTo.isNotEmpty ? _availableTo : 'Select Time'),
-                ),
-              ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
             ),
-          ],
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Color(0xFF3B82F6), width: 2),
+            ),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          ),
+          validator: required
+              ? (val) => val == null || val.trim().isEmpty ? 'Required field' : null
+              : null,
         ),
       ],
     );
@@ -1189,70 +703,198 @@ class _DoctorOnboardingPageState extends State<DoctorOnboardingPage> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             const Text(
-              'CUSTOM DETAILS (DYNAMIC)',
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey, letterSpacing: 1.0),
+              'Custom Diagnostic Attributes',
+              style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF475569)),
             ),
             TextButton.icon(
               onPressed: _addCustomField,
-              icon: const Icon(Icons.add_rounded, size: 18),
-              label: const Text('Add Detail Row'),
-              style: TextButton.styleFrom(
-                foregroundColor: Colors.blueAccent,
-                textStyle: const TextStyle(fontWeight: FontWeight.bold),
-              ),
+              icon: const Icon(Icons.add_rounded, size: 16),
+              label: const Text('Add Attribute', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
             ),
           ],
         ),
-        if (_customFields.isEmpty)
-          Padding(
-            padding: const EdgeInsets.only(top: 8.0, bottom: 16.0),
-            child: Text(
-              'No custom fields added yet. Press the button to add headings and details (e.g. Hospital, Consultation Fee).',
-              style: TextStyle(fontSize: 13, color: Colors.grey.shade500, fontStyle: FontStyle.italic),
-            ),
-          )
-        else
-          ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: _customFields.length,
-            itemBuilder: (context, index) {
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 12.0),
-                child: Row(
-                  children: [
-                    Expanded(
-                      flex: 2,
-                      child: TextFormField(
-                        controller: _customFields[index].key,
-                        decoration: InputDecoration(
-                          labelText: 'Side Heading (e.g. Hospital)',
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                        ),
+        if (_customFields.isNotEmpty) const SizedBox(height: 8),
+        ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: _customFields.length,
+          itemBuilder: (context, index) {
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 8.0),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _customFields[index].key,
+                      decoration: InputDecoration(
+                        hintText: 'Key (e.g. License ID)',
+                        hintStyle: const TextStyle(fontSize: 12),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      flex: 3,
-                      child: TextFormField(
-                        controller: _customFields[index].value,
-                        decoration: InputDecoration(
-                          labelText: 'Details / Values',
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                        ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: TextField(
+                      controller: _customFields[index].value,
+                      decoration: InputDecoration(
+                        hintText: 'Value (e.g. LIC-2938)',
+                        hintStyle: const TextStyle(fontSize: 12),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    IconButton(
-                      icon: const Icon(Icons.remove_circle_outline_rounded, color: Colors.redAccent),
-                      onPressed: () => _removeCustomField(index),
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.remove_circle_outline_rounded, color: Color(0xFFEF4444)),
+                    onPressed: () => _removeCustomField(index),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
       ],
+    );
+  }
+
+  Widget _buildListHeader() {
+    return Row(
+      children: [
+        const Text(
+          'Onboarded Directory',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.textMainColor),
+        ),
+        const Spacer(),
+        // Status Filter dropdown
+        Container(
+          height: 38,
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          decoration: BoxDecoration(
+            color: AppTheme.surfaceColor,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: AppTheme.hairlineColor),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              value: _statusFilter,
+              items: ['All', 'Saved', 'Call Scheduled', 'MedRep Launched'].map((status) {
+                return DropdownMenuItem<String>(value: status, child: Text(status, style: const TextStyle(fontSize: 12)));
+              }).toList(),
+              onChanged: (val) {
+                if (val != null) setState(() => _statusFilter = val);
+              },
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(40.0),
+      decoration: BoxDecoration(
+        color: AppTheme.surfaceColor,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppTheme.hairlineColor),
+      ),
+      child: const Center(
+        child: Text(
+          'No clinic records fit your current filtering criteria.',
+          style: TextStyle(color: AppTheme.textMutedColor),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDoctorsListView(List<Doctor> filteredDoctors) {
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: filteredDoctors.length,
+      itemBuilder: (context, index) {
+        final doc = filteredDoctors[index];
+        
+        Color badgeBg = const Color(0xFFF1F5F9);
+        Color badgeText = const Color(0xFF475569);
+        if (doc.status == 'MedRep Launched') {
+          badgeBg = AppTheme.primaryColor.withOpacity(0.12);
+          badgeText = AppTheme.primaryColor;
+        } else if (doc.status == 'Call Scheduled') {
+          badgeBg = const Color(0xFFFFFBEB);
+          badgeText = const Color(0xFFD97706);
+        } else if (doc.status == 'Saved') {
+          badgeBg = const Color(0xFFECFDF5);
+          badgeText = const Color(0xFF059669);
+        }
+
+        return Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          decoration: BoxDecoration(
+            color: AppTheme.surfaceColor,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppTheme.hairlineColor),
+            boxShadow: [
+              BoxShadow(
+                color: AppTheme.primaryColor.withOpacity(0.01),
+                blurRadius: 16,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: Material(
+            color: Colors.transparent,
+            borderRadius: BorderRadius.circular(16),
+            clipBehavior: Clip.antiAlias,
+            child: ListTile(
+              contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              leading: CircleAvatar(
+                radius: 18,
+                backgroundColor: AppTheme.primaryColor.withOpacity(0.12),
+                child: Text(
+                  doc.name.isNotEmpty ? doc.name[0].toUpperCase() : 'D',
+                  style: const TextStyle(color: AppTheme.primaryColor, fontWeight: FontWeight.bold),
+                ),
+              ),
+              title: Text(
+                doc.name,
+                style: const TextStyle(fontWeight: FontWeight.bold, color: AppTheme.textMainColor, fontSize: 15),
+              ),
+              subtitle: Padding(
+                padding: const EdgeInsets.only(top: 4.0),
+                child: Text(
+                  '${doc.specialty} • ${doc.region} • ${doc.mobile}',
+                  style: const TextStyle(color: Color(0xFF64748B), fontSize: 12),
+                ),
+              ),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: badgeBg,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      doc.status,
+                      style: TextStyle(color: badgeText, fontWeight: FontWeight.bold, fontSize: 11),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  IconButton(
+                    icon: const Icon(Icons.delete_outline_rounded, color: Color(0xFFEF4444)),
+                    onPressed: () => _deleteDoctorConfirm(doc),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../widgets/sidebar.dart';
+import '../../widgets/dashboard_card.dart';
 import '../../services/api_service.dart';
 import '../../models/doctor.dart';
 import '../../models/interaction.dart';
+import '../../theme_config.dart';
 
 class DoctorsPage extends StatefulWidget {
   const DoctorsPage({super.key});
@@ -48,365 +50,454 @@ class _DoctorsPageState extends State<DoctorsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final isWide = size.width > 960;
+
     return Scaffold(
-      backgroundColor: Colors.grey[50],
-      appBar: AppBar(
-        title: const Text(
-          'Analytics',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        backgroundColor: Colors.blueAccent,
-        foregroundColor: Colors.white,
-        elevation: 2,
-        leading: Builder(
-          builder: (context) {
-            return IconButton(
-              icon: const Icon(Icons.menu),
-              onPressed: () {
-                Scaffold.of(context).openDrawer();
-              },
-            );
-          },
-        ),
-        actions: [
-          // Toggle button to learn both views
-          IconButton(
-            icon: Icon(
-              showAsTable ? Icons.view_list_rounded : Icons.table_chart_rounded,
-            ),
-            tooltip: showAsTable
-                ? 'Switch to List View'
-                : 'Switch to Table View',
-            onPressed: () {
-              setState(() {
-                showAsTable = !showAsTable;
-              });
-            },
-          ),
-          const SizedBox(width: 8),
-        ],
-      ),
-      drawer: const Sidebar(),
-      body: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Hero Header
-            Container(
-              width: double.infinity,
-              height: 180,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20),
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF0D47A1), Color(0xFF1976D2)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.blueAccent.withOpacity(0.3),
-                    blurRadius: 15,
-                    offset: const Offset(0, 5),
-                  ),
-                ],
-              ),
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
-                  gradient: LinearGradient(
-                    colors: [
-                      Colors.blueAccent.withOpacity(0.4),
-                      Colors.transparent,
-                    ],
-                    begin: Alignment.bottomLeft,
-                    end: Alignment.topRight,
-                  ),
-                ),
-                padding: const EdgeInsets.all(24.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Analytics',
-                          style: TextStyle(
-                            fontSize: 28,
-                            fontWeight: FontWeight.w900,
-                            color: Colors.white,
-                          ),
-                        ).animate().fade().slideY(begin: 0.3),
-                        const SizedBox(height: 8),
-                        const Text(
-                          'Track performance and interactions.',
-                          style: TextStyle(fontSize: 16, color: Colors.white70),
-                        ).animate().fade(delay: 200.ms).slideY(begin: 0.3),
-                      ],
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 8,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        'Total: ${doctorData.length}',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ).animate().fade(delay: 400.ms).scale(),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
-
-            Expanded(
-              child: _isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : doctorData.isEmpty
-                      ? const Center(child: Text('No doctors found.'))
-                      : showAsTable
-                          ? _buildTableView()
-                                .animate()
-                                .fade(duration: 400.ms)
-                                .slideX(begin: 0.05)
-                          : _buildListView()
-                                .animate()
-                                .fade(duration: 400.ms)
-                                .slideX(begin: 0.05),
-            ),
-          ].animate(interval: 50.ms).fade(duration: 400.ms),
-        ),
-      ),
-    );
-  }
-
-  // 1. Learning DataTable feature
-  Widget _buildTableView() {
-    return Card(
-      elevation: 4,
-      shadowColor: Colors.blueAccent.withOpacity(0.1),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: Colors.blueAccent.withOpacity(0.05)),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: SingleChildScrollView(
-            child: DataTable(
-              headingRowColor: WidgetStateProperty.resolveWith(
-                (states) => Colors.grey[100],
-              ),
-              headingTextStyle: const TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-              ),
-              dataRowMinHeight: 60,
-              dataRowMaxHeight: 60,
-              columns: const [
-                DataColumn(label: Text('Doctor')),
-                DataColumn(label: Text('Specialty')),
-                DataColumn(label: Text('Region')),
-                DataColumn(label: Text('Interactions'), numeric: true),
-              ],
-              rows: doctorData.map((data) {
-                return DataRow(
-                  cells: [
-                    DataCell(
-                      Row(
-                        children: [
-                          CircleAvatar(
-                            radius: 16,
-                            backgroundColor: Colors.blueAccent.withOpacity(0.1),
-                            child:
-                                const Icon(
-                                      Icons.person,
-                                      size: 18,
-                                      color: Colors.blueAccent,
-                                    )
-                                    .animate(
-                                      onPlay: (controller) =>
-                                          controller.repeat(reverse: true),
-                                    )
-                                    .scale(
-                                      begin: const Offset(1, 1),
-                                      end: const Offset(1.1, 1.1),
-                                      duration: 1.seconds,
-                                    )
-                                    .shimmer(
-                                      duration: 2.seconds,
-                                      color: Colors.blue[300],
-                                    ),
-                          ),
-                          const SizedBox(width: 12),
-                          Text(
-                          data.name,
-                          style: const TextStyle(fontWeight: FontWeight.w600),
-                        ),
-                      ],
-                    ),
-                  ),
-                  DataCell(Text(data.specialty)),
-                  DataCell(
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade100,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.grey.shade300),
-                      ),
-                      child: Text(
-                        data.region,
-                        style: TextStyle(
-                          color: Colors.grey.shade700,
-                          fontSize: 13,
-                        ),
-                      ),
-                    ),
-                  ),
-                  // Highlighting High performers
-                  DataCell(
-                    Text(
-                      _getInteractionCountForDoctor(data.id).toString(),
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
-                      ),
-                    ),
-                  ),
-                  ],
-                );
-              }).toList(),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  // 2. Learning ListView.builder feature
-  Widget _buildListView() {
-    return ListView.builder(
-      itemCount: doctorData.length,
-      itemBuilder: (context, index) {
-        final data = doctorData[index];
-        return Card(
-              elevation: 4,
-              shadowColor: Colors.blueAccent.withOpacity(0.1),
-              margin: const EdgeInsets.only(bottom: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-                side: BorderSide(color: Colors.blueAccent.withOpacity(0.05)),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 24,
-                      backgroundColor: Colors.blueAccent.withOpacity(0.1),
-                      child:
-                          const Icon(
-                                Icons.medical_services_rounded,
-                                color: Colors.blueAccent,
-                              )
-                              .animate(
-                                onPlay: (controller) =>
-                                    controller.repeat(reverse: true),
-                              )
-                              .scale(
-                                begin: const Offset(1, 1),
-                                end: const Offset(1.1, 1.1),
-                                duration: 1200.ms,
-                              )
-                              .shimmer(
-                                duration: 2.seconds,
-                                color: Colors.blue[300],
-                              ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
+      backgroundColor: AppTheme.backgroundColor,
+      drawer: isWide ? null : const Sidebar(),
+      body: Row(
+        children: [
+          // Sidebar Panel on desktop
+          if (isWide)
+            const Sidebar(isPermanent: true),
+            
+          // Main Content
+          Expanded(
+            child: SafeArea(
+              child: Column(
+                children: [
+                  // App Bar
+                  _buildAppBar(context),
+                  
+                  // Main Body Scrollable
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.all(24.0),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            data.name,
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
+                          // Hero Analytics Card
+                          _buildHeroCard(),
+                          const SizedBox(height: 24),
+                          
+                          // Analytics Mini Stats Row
+                          _buildAnalyticsStatsRow(),
+                          const SizedBox(height: 24),
+                          
+                          // Toggle header
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text(
+                                'Portfolio Distribution',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppTheme.textMainColor,
+                                ),
+                              ),
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: AppTheme.surfaceColor,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(color: AppTheme.hairlineColor),
+                                ),
+                                child: IconButton(
+                                  icon: Icon(
+                                    showAsTable ? Icons.view_list_rounded : Icons.table_chart_rounded,
+                                    color: AppTheme.primaryColor,
+                                  ),
+                                  tooltip: showAsTable ? 'Switch to Card List' : 'Switch to Table View',
+                                  onPressed: () {
+                                    setState(() {
+                                      showAsTable = !showAsTable;
+                                    });
+                                  },
+                                ),
+                              ),
+                            ],
                           ),
-                          const SizedBox(height: 4),
-                          Text(
-                            '${data.specialty} • ${data.region}',
-                            style: TextStyle(color: Colors.grey[600]),
-                          ),
+                          const SizedBox(height: 16),
+                          
+                          // Inner View
+                          _isLoading
+                              ? const Center(child: Padding(
+                                  padding: EdgeInsets.all(40.0),
+                                  child: CircularProgressIndicator(color: AppTheme.primaryColor),
+                                ))
+                              : doctorData.isEmpty
+                                  ? const Center(
+                                      child: Padding(
+                                        padding: EdgeInsets.all(40.0),
+                                        child: Text('No doctor profiles found.'),
+                                      ),
+                                    )
+                                  : showAsTable
+                                      ? _buildTableView().animate().fade().slideY(begin: 0.05)
+                                      : _buildListView().animate().fade().slideY(begin: 0.05),
                         ],
                       ),
                     ),
-                    Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: Colors.blueAccent.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(12),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.blueAccent.withOpacity(0.2),
-                                blurRadius: 8,
-                              ),
-                            ],
-                          ),
-                          child: Column(
-                            children: [
-                              Text(
-                                _getInteractionCountForDoctor(data.id).toString(),
-                                style: const TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.blueAccent,
-                                ),
-                              ),
-                              Text(
-                                'Visits',
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  color: Colors.grey[600],
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                        )
-                        .animate(onPlay: (controller) => controller.repeat())
-                        .shimmer(
-                          duration: 2500.ms,
-                          color: Colors.white24,
-                          angle: 0.5,
-                        ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAppBar(BuildContext context) {
+    return Container(
+      color: AppTheme.surfaceColor,
+      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+      child: Row(
+        children: [
+          if (MediaQuery.of(context).size.width <= 960) ...[
+            IconButton(
+              icon: const Icon(Icons.menu, color: AppTheme.textMutedColor),
+              onPressed: () => Scaffold.of(context).openDrawer(),
+            ),
+            const SizedBox(width: 12),
+          ],
+          const Text(
+            'Doctor Analytics & Metrics',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: AppTheme.textMainColor,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeroCard() {
+    return Container(
+      width: double.infinity,
+      height: 160,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
+        gradient: const LinearGradient(
+          colors: [AppTheme.primaryColor, AppTheme.secondaryColor], // Darker rich blue gradient
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: Stack(
+        children: [
+          Positioned(
+            right: -20,
+            bottom: -30,
+            child: Opacity(
+              opacity: 0.1,
+              child: const Icon(Icons.analytics_rounded, size: 200, color: Colors.white),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(28.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Analytics & Performance',
+                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: -0.5),
+                    ).animate().fade().slideY(begin: 0.1),
+                    const SizedBox(height: 6),
+                    const Text(
+                      'Track interactive consultation loops and communication targets.',
+                      style: TextStyle(fontSize: 14, color: Colors.white70),
+                    ).animate().fade(delay: 200.ms).slideY(begin: 0.1),
                   ],
                 ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    'Total Accounts: ${doctorData.length}',
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                  ),
+                ).animate().scale(delay: 300.ms),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTableView() {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: AppTheme.surfaceColor,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppTheme.hairlineColor),
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.primaryColor.withOpacity(0.01),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: DataTable(
+          headingRowColor: WidgetStateProperty.resolveWith(
+            (states) => AppTheme.surfaceColorLevel2,
+          ),
+          headingTextStyle: const TextStyle(
+            fontWeight: FontWeight.bold,
+            color: AppTheme.textMainColor,
+            fontSize: 13,
+          ),
+          horizontalMargin: 20,
+          columnSpacing: 36,
+          dataRowMinHeight: 60,
+          dataRowMaxHeight: 60,
+          columns: const [
+            DataColumn(label: Text('Doctor Name')),
+            DataColumn(label: Text('Specialty')),
+            DataColumn(label: Text('Region')),
+            DataColumn(label: Text('Interactions'), numeric: true),
+            DataColumn(label: Text('Status')),
+          ],
+          rows: doctorData.map((doc) {
+            final count = _getInteractionCountForDoctor(doc.id);
+            
+            // Build nice status badge colors
+            Color badgeBg = const Color(0xFFF1F5F9);
+            Color badgeText = const Color(0xFF475569);
+            if (doc.status == 'MedRep Launched') {
+              badgeBg = AppTheme.primaryColor.withOpacity(0.12);
+              badgeText = AppTheme.primaryColor;
+            } else if (doc.status == 'Call Scheduled') {
+              badgeBg = const Color(0xFFFFFBEB);
+              badgeText = const Color(0xFFD97706);
+            } else if (doc.status == 'Saved') {
+              badgeBg = const Color(0xFFECFDF5);
+              badgeText = const Color(0xFF059669);
+            }
+
+            return DataRow(
+              cells: [
+                DataCell(
+                  Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 14,
+                        backgroundColor: AppTheme.primaryColor.withOpacity(0.12),
+                        child: Text(
+                          doc.name.isNotEmpty ? doc.name[0].toUpperCase() : 'D',
+                          style: const TextStyle(color: AppTheme.primaryColor, fontWeight: FontWeight.bold, fontSize: 11),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        doc.name,
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppTheme.textMainColor),
+                      ),
+                    ],
+                  ),
+                ),
+                DataCell(Text(doc.specialty, style: const TextStyle(fontSize: 13))),
+                DataCell(
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppTheme.surfaceColorLevel2,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      doc.region.isNotEmpty ? doc.region : 'Not Specified',
+                      style: const TextStyle(color: AppTheme.textMutedColor, fontSize: 11),
+                    ),
+                  ),
+                ),
+                DataCell(
+                  Text(
+                    '$count',
+                    style: const TextStyle(fontWeight: FontWeight.bold, color: AppTheme.textMainColor),
+                  ),
+                ),
+                DataCell(
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: badgeBg,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      doc.status,
+                      style: TextStyle(color: badgeText, fontWeight: FontWeight.bold, fontSize: 11),
+                    ),
+                  ),
+                ),
+              ],
+            );
+          }).toList(),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildListView() {
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: doctorData.length,
+      itemBuilder: (context, index) {
+        final doc = doctorData[index];
+        final count = _getInteractionCountForDoctor(doc.id);
+        
+        Color badgeBg = const Color(0xFFF1F5F9);
+        Color badgeText = const Color(0xFF475569);
+        if (doc.status == 'MedRep Launched') {
+          badgeBg = AppTheme.primaryColor.withOpacity(0.12);
+          badgeText = AppTheme.primaryColor;
+        } else if (doc.status == 'Call Scheduled') {
+          badgeBg = const Color(0xFFFFFBEB);
+          badgeText = const Color(0xFFD97706);
+        } else if (doc.status == 'Saved') {
+          badgeBg = const Color(0xFFECFDF5);
+          badgeText = const Color(0xFF059669);
+        }
+
+        return Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          decoration: BoxDecoration(
+            color: AppTheme.surfaceColor,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppTheme.hairlineColor),
+            boxShadow: [
+              BoxShadow(
+                color: AppTheme.primaryColor.withOpacity(0.01),
+                blurRadius: 16,
+                offset: const Offset(0, 6),
               ),
-            )
-            .animate()
-            .fade(duration: 400.ms, delay: (50 * index).ms)
-            .slideX(begin: 0.1);
+            ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
+              children: [
+                CircleAvatar(
+                  radius: 20,
+                  backgroundColor: AppTheme.primaryColor.withOpacity(0.12),
+                  child: Text(
+                    doc.name.isNotEmpty ? doc.name[0].toUpperCase() : 'D',
+                    style: const TextStyle(fontWeight: FontWeight.bold, color: AppTheme.primaryColor),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Text(
+                            doc.name,
+                            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppTheme.textMainColor),
+                          ),
+                          const SizedBox(width: 10),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: badgeBg,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              doc.status,
+                              style: TextStyle(color: badgeText, fontWeight: FontWeight.bold, fontSize: 10),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '${doc.specialty} • ${doc.region.isNotEmpty ? doc.region : "Global"}',
+                        style: const TextStyle(color: Color(0xFF64748B), fontSize: 13),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEFF6FF),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Column(
+                    children: [
+                      Text(
+                        '$count',
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF2563EB)),
+                      ),
+                      const Text(
+                        'Visits',
+                        style: TextStyle(fontSize: 10, color: Color(0xFF64748B), fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ).animate().fade(duration: 350.ms, delay: (index * 40).ms).slideX(begin: 0.05);
       },
+    );
+  }
+
+  Widget _buildAnalyticsStatsRow() {
+    final activeLoops = doctorData.where((d) => d.status != 'Saved').length;
+    final totalInteractions = interactionsData.length;
+    final avgInteractions = doctorData.isEmpty 
+        ? '0.0' 
+        : (totalInteractions / doctorData.length).toStringAsFixed(1);
+
+    return Row(
+      children: [
+        Expanded(
+          child: DashboardCard(
+            title: 'Active Loops',
+            value: '$activeLoops',
+            icon: Icons.bolt_rounded,
+            accentColor: const Color(0xFF7C3AED),
+          ),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: DashboardCard(
+            title: 'Logged Syncs',
+            value: '$totalInteractions',
+            icon: Icons.chat_bubble_outline_rounded,
+            accentColor: const Color(0xFF0D9488),
+          ),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: DashboardCard(
+            title: 'Avg. Interactions',
+            value: avgInteractions,
+            icon: Icons.analytics_rounded,
+            accentColor: const Color(0xFFEA580C),
+          ),
+        ),
+      ],
     );
   }
 }

@@ -12,7 +12,8 @@ exports.getInteractions = async (req, res) => {
 exports.createInteraction = async (req, res) => {
   const interaction = new Interaction(req.body);
   try {
-    const newInteraction = await interaction.save();
+    let newInteraction = await interaction.save();
+    newInteraction = await newInteraction.populate('doctor');
     res.status(201).json(newInteraction);
   } catch (err) {
     res.status(400).json({ message: err.message });

@@ -41,7 +41,38 @@ class ApiService {
   }
 
   List<Lead> _getDummyLeads() {
-    return [];
+    return [
+      Lead(
+        id: 'lead_1',
+        doctorName: 'Dr. Alice Smith',
+        query: 'Requested samples of Paracetamol 500mg but only received 250mg.',
+        status: 'Pending',
+        createdAt: DateTime.now().subtract(const Duration(days: 2)),
+      ),
+      Lead(
+        id: 'lead_2',
+        doctorName: 'Dr. Bob Jones',
+        query: 'The login credentials for the portal are not working.',
+        status: 'In Progress',
+        assignedTo: 'Tech Alex',
+        createdAt: DateTime.now().subtract(const Duration(days: 1)),
+      ),
+      Lead(
+        id: 'lead_3',
+        doctorName: 'Dr. Charlie Brown',
+        query: 'Need detailed literature on the new cardiovascular drug efficacy.',
+        status: 'Pending',
+        createdAt: DateTime.now().subtract(const Duration(hours: 4)),
+      ),
+      Lead(
+        id: 'lead_4',
+        doctorName: 'Dr. Diana Prince',
+        query: "Delivery of last week's order is delayed by 3 days.",
+        status: 'Resolved',
+        assignedTo: 'Tech Sarah',
+        createdAt: DateTime.now().subtract(const Duration(days: 5)),
+      ),
+    ];
   }
 
   Future<void> updateLeadStatus(String id, String status) async {
@@ -91,7 +122,24 @@ class ApiService {
   }
 
   List<Interaction> _getDummyInteractions() {
-    return [];
+    return [
+      Interaction(
+        id: 'inter_1',
+        doctorId: '6a2317f2582fb8e94a173ad6',
+        doctorName: 'Dr Harshith Sharma',
+        notes: 'Discussed cardiovascular drug efficacy and provided patient samples.',
+        type: 'In-person',
+        date: DateTime.now().subtract(const Duration(days: 1)),
+      ),
+      Interaction(
+        id: 'inter_2',
+        doctorId: '6a239c3b99d2884d26be5439',
+        doctorName: 'Dr Roopa Reddy',
+        notes: 'Walked through custom dosage guidelines via tele-call.',
+        type: 'Virtual',
+        date: DateTime.now().subtract(const Duration(hours: 3)),
+      ),
+    ];
   }
 
   Future<List<Doctor>> fetchDoctors() async {
@@ -114,7 +162,7 @@ class ApiService {
         name: 'Dr Chandramouli S',
         specialty: 'General Physician',
         region: 'Visakhapatnam',
-        mobile: '8897208298',
+        mobile: '+91 88972 08298',
         email: 'samathamcm@gmail.com',
         status: 'Saved',
         availableFrom: '9:00 AM',
@@ -122,36 +170,36 @@ class ApiService {
       ),
       Doctor(
         id: '6a2317f2582fb8e94a173ad6',
-        name: 'Harshith',
-        specialty: 'General Practice',
-        region: 'Not Specified',
-        mobile: '+353894938404',
-        email: '',
-        status: 'AI Agent Launched',
-        availableFrom: '',
-        availableTo: '',
+        name: 'Dr Harshith Sharma',
+        specialty: 'Cardiologist',
+        region: 'Hyderabad',
+        mobile: '+91 94943 84045',
+        email: 'harshith.sharma@cardiohealth.in',
+        status: 'MedRep Launched',
+        availableFrom: '10:00 AM',
+        availableTo: '6:00 PM',
       ),
       Doctor(
         id: '6a239b7699d2884d26be5438',
-        name: 'Tota Deepa Swamy',
-        specialty: 'General Practice',
-        region: 'Not Specified',
-        mobile: '9160011180',
-        email: '',
-        status: 'AI Agent Launched',
-        availableFrom: '',
-        availableTo: '',
+        name: 'Dr Tota Deepa Swamy',
+        specialty: 'Pediatrician',
+        region: 'Bangalore',
+        mobile: '+91 91600 11180',
+        email: 'deepa.swamy@pediatriccare.org',
+        status: 'Call Scheduled',
+        availableFrom: '11:00 AM',
+        availableTo: '4:00 PM',
       ),
       Doctor(
         id: '6a239c3b99d2884d26be5439',
-        name: 'Dr Roopa',
-        specialty: 'General Practice',
-        region: 'Not Specified',
-        mobile: '+919160011180',
-        email: '',
-        status: 'AI Agent Launched',
-        availableFrom: '',
-        availableTo: '',
+        name: 'Dr Roopa Reddy',
+        specialty: 'Dermatologist',
+        region: 'Chennai',
+        mobile: '+91 91600 22280',
+        email: 'roopa.reddy@skincare.in',
+        status: 'MedRep Launched',
+        availableFrom: '9:30 AM',
+        availableTo: '3:30 PM',
       ),
     ];
   }

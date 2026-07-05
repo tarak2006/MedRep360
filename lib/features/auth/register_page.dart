@@ -3,6 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../../services/auth_service.dart';
 import '../../services/session_state.dart';
 import '../../services/api_service.dart';
+import '../../theme_config.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -81,7 +82,7 @@ class _RegisterPageState extends State<RegisterPage> {
             flex: 4,
             child: Container(
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: AppTheme.surfaceColor,
                 boxShadow: [
                   if (MediaQuery.of(context).size.width > 800)
                     BoxShadow(
@@ -102,65 +103,60 @@ class _RegisterPageState extends State<RegisterPage> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children:
-                          [
-                                // Header
+                      children: [
+                                // App Logo and Title instead of Create Account heading
                                 Center(
-                                  child:
-                                      Container(
-                                            decoration: BoxDecoration(
-                                              shape: BoxShape.circle,
-                                              boxShadow: [
-                                                BoxShadow(
-                                                  color: Colors.blueAccent
-                                                      .withOpacity(0.3),
-                                                  blurRadius: 20,
-                                                  spreadRadius: 5,
-                                                ),
-                                              ],
-                                            ),
-                                            child: const Icon(
-                                              Icons.person_add_alt_1_rounded,
-                                              size: 72,
-                                              color: Colors.blueAccent,
-                                            ),
-                                          )
-                                          .animate(
-                                            onPlay: (controller) => controller
-                                                .repeat(reverse: true),
-                                          )
-                                          .scale(
-                                            begin: const Offset(1, 1),
-                                            end: const Offset(1.05, 1.05),
-                                            duration: 1200.ms,
-                                            curve: Curves.easeInOut,
-                                          )
-                                          .shimmer(
-                                            duration: 2400.ms,
-                                            color: Colors.white,
+                                  child: Container(
+                                    margin: const EdgeInsets.only(bottom: 20),
+                                    child: Image.asset(
+                                      'assets/images/logo_full_dark.png',
+                                      height: 64,
+                                      fit: BoxFit.contain,
+                                      errorBuilder: (context, error, stackTrace) => Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          const Icon(
+                                            Icons.monitor_heart_rounded,
+                                            size: 32,
+                                            color: AppTheme.primaryColor,
                                           ),
-                                ),
-                                const SizedBox(height: 16),
-                                const Text(
-                                  'Create Account',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontSize: 32,
-                                    fontWeight: FontWeight.w900,
-                                    color: Colors.blueAccent,
-                                    letterSpacing: 1.2,
+                                          const SizedBox(width: 8),
+                                          const Text(
+                                            'MedRep 360',
+                                            style: TextStyle(
+                                              fontSize: 22,
+                                              fontWeight: FontWeight.bold,
+                                              color: AppTheme.primaryColor,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
                                   ),
                                 ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  'Join MedRep 360 today and streamline your workflow.',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    color: Colors.grey[600],
+                                const Center(
+                                  child: Text(
+                                    'Create Clinical Workspace',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: AppTheme.textMainColor,
+                                      letterSpacing: -0.3,
+                                    ),
                                   ),
                                 ),
-                                const SizedBox(height: 48),
+                                const SizedBox(height: 6),
+                                const Center(
+                                  child: Text(
+                                    'Register to sync doctor portfolios and team leads.',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color: AppTheme.textMutedColor,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                                const SizedBox(height: 28),
 
                                 // Name Field
                                 TextField(
@@ -338,8 +334,8 @@ class _RegisterPageState extends State<RegisterPage> {
                                               borderRadius:
                                                   BorderRadius.circular(12),
                                             ),
-                                            backgroundColor: Colors.blueAccent,
-                                            foregroundColor: Colors.white,
+                                            backgroundColor: AppTheme.primaryColor,
+                                            foregroundColor: AppTheme.backgroundColor,
                                             elevation: 0,
                                           ),
                                           child: const Text(
@@ -369,7 +365,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                     Text(
                                       'Already have an account?',
                                       style: TextStyle(
-                                        color: Colors.grey[700],
+                                        color: AppTheme.textMutedColor,
                                         fontSize: 16,
                                       ),
                                     ),
@@ -405,7 +401,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 children: [
                   Positioned.fill(
                     child: Image.network(
-                      'https://images.unsplash.com/photo-1551076805-e18690c5e53b?q=80&w=2000&auto=format&fit=crop',
+                      'https://images.unsplash.com/photo-1629909613654-28e377c37b09?q=80&w=1200&auto=format&fit=crop',
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) {
                         return Container(
@@ -419,7 +415,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [
-                            Colors.blueAccent.withOpacity(0.8),
+                            Colors.black.withOpacity(0.6),
                             Colors.transparent,
                           ],
                           begin: Alignment.bottomRight,
