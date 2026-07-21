@@ -4,7 +4,7 @@ import 'features/auth/login_page.dart';
 import 'features/dashboard/dashboard_page.dart';
 import 'features/interactions/interactions_page.dart';
 import 'services/storage_check.dart';
-import 'theme_config.dart';
+import 'features/admin/admin_panel_page.dart';
 
 class InMemoryLocalStorage extends LocalStorage {
   final Map<String, String> _storage = {};
@@ -85,12 +85,12 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'MedRep 360',
-      theme: AppTheme.themeData,
       debugShowCheckedModeBanner: false,
       home: const LoginPage(),
       routes: {
         '/dashboard': (context) => const DashboardPage(),
         '/interactions': (context) => const InteractionsPage(),
+        '/admin': (context) => const AdminPanelPage(),
       },
     );
   }
